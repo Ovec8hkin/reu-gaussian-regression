@@ -1,10 +1,9 @@
 import numpy as np
 from matplotlib import pylab as pl
 from velocity_fields import spiral_vf
-from trajectories.calculate_trajectory import get_velocity
-import manual_selection_regression as msregression
+from regression import Regression
 from matplotlib.widgets import Button
-from generate_plots import generate_plots_static
+from trajectories.get_velocity import get_velocity
 
 ds = 2  # What is this property?
 figW = 10.
@@ -44,11 +43,14 @@ def show_regression_plot(event):
         new_plot.remove()
 
     Xo = np.concatenate([ys, xs], 1)
+    print(Xo)
     obs = np.apply_along_axis(get_velocity, 1, Xo)
 
-    reg = msregression.regression(Xo, obs)
+    reg = Regression()
+    reg.initialize_samples(len(Xo), obs=obs, Xo=Xo)
+    reg.run_model()
 
-    x, y, u, v, ur, vr, Xo = reg[0], reg[1], reg[2], reg[3], reg[4], reg[5], reg[6]
+    x, y, u, v, ur, vr, Xo, _, _ = reg.get_params()
 
     new_plot = fig.add_subplot(1, 2, 2, aspect='equal')
     new_plot.quiver(x[::ds], y[::ds], ur[::ds, ::ds], vr[::ds, ::ds], scale=scale)
@@ -74,7 +76,7 @@ def clear(event):
 
 
 def show_errors(event):
-    generate_plots_static(reg, errors_only=False)
+    reg.plot_errors()
 
 
 def place_scatter(event):
