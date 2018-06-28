@@ -2,7 +2,7 @@ import numpy as np
 import GPy
 from velocity_fields import spiral_vf as svf
 from trajectories.Trajectory import Trajectory, Pattern
-
+import os
 import matplotlib.pylab as pl
 
 
@@ -30,6 +30,10 @@ class Regression:
 
         self.generate_vector_field()
         self.create_and_shape_grid()
+
+        self.model_u = None
+        self.model_v = None
+        self.trajectory = None
 
         self.ds = 2  # What is this property?
         self.figW = 10.
@@ -74,10 +78,12 @@ class Regression:
 
             if trajectory is not None:
 
-                trajectory.lagtransport()
-                inter = trajectory.get_intermediates()
+                self.trajectory = trajectory
 
-                vels = np.apply_along_axis(trajectory.get_velocity, 1, inter)
+                self.trajectory.lagtransport()
+                inter = self.trajectory.get_intermediates()
+
+                vels = np.apply_along_axis(self.trajectory.get_velocity, 1, inter)
 
                 self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
                 self.Xo = np.concatenate([inter[:, 1][:, None], inter[:, 0][:, None]], axis=1)
@@ -102,6 +108,9 @@ class Regression:
 
         self.ku = np.reshape(Ku, [self.y.size, self.x.size])
         self.kv = np.reshape(Kv, [self.y.size, self.x.size])
+
+        self.model_u = model_u
+        self.model_v = model_v
 
     def get_params(self):
         return self.x, self.y, self.u, self.v, self.ur, self.vr, self.Xo, self.ku, self.kv
@@ -304,6 +313,56 @@ class Regression:
         pl.show()
 
 
+    def save_data_to_file(self, directory):
+        np.savetxt(directory+"regression_x.csv", self.x, fmt="%.6e", delimiter=',')
+        np.savetxt(directory+"regression_y.csv", self.y, fmt="%.6e", delimiter=',')
+        np.savetxt(directory+"regression_u.csv", self.u, fmt="%.6e", delimiter=',')
+        np.savetxt(directory+"regression_v.csv", self.v, fmt="%.6e", delimiter=',')
+        np.savetxt(directory+"regression_ur.csv", self.ur, fmt="%.6e", delimiter=',')
+        np.savetxt(directory+"regression_vr.csv", self.vr, fmt="%.6e", delimiter=',')
+        np.savetxt(directory+"regression_xo.csv", self.Xo, fmt="%.6e", delimiter=',')
+        np.savetxt(directory+"regression_obs.csv", self.obs, fmt="%.6e", delimiter=',')
+        np.savetxt(directory+"regression_ku.csv", self.ku, fmt="%.6e", delimiter=',')
+        np.savetxt(directory+"regression_kv.csv", self.kv, fmt="%.6e", delimiter=',')
+
+        if self.trajectory is not None:
+            print("Saving Trajectory")
+            self.trajectory.save_positions_to_file()
+
+        np.savetxt(directory+"regression_model_u.npy", self.model_u.param_array, fmt="%.6e", delimiter=',')
+        np.savetxt(directory+"regression_model_v.npy", self.model_v.param_array, fmt="%.6e", delimiter=',')
+
+    def load_data_from_file(self, directory):
+
+        self.x = np.loadtxt(directory+"regression_x.csv", delimiter=',')
+        self.y = np.loadtxt(directory+"regression_y.csv", delimiter=',')
+        self.u = np.loadtxt(directory+"regression_u.csv", delimiter=',')
+        self.v = np.loadtxt(directory+"regression_v.csv", delimiter=',')
+        self.ur = np.loadtxt(directory+"regression_ur.csv", delimiter=',')
+        self.vr = np.loadtxt(directory+"regression_vr.csv", delimiter=',')
+        self.Xo = np.loadtxt(directory+"regression_xo.csv", delimiter=',')
+        self.obs = np.loadtxt(directory+"regression_obs.csv", delimiter=',')
+        self.ku = np.loadtxt(directory+"regression_ku.csv", delimiter=',')
+        self.kv = np.loadtxt(directory+"regression_kv.csv", delimiter=',')
+
+        if os.path.exists(directory+'trajectory_data.csv'):
+            print("Loading Trajectory")
+            self.trajectory = Trajectory(0, 0, 0)
+            self.trajectory.load_positions_from_file()
+
+        k = GPy.kern.RBF(input_dim=2, variance=1)
+        self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, 1][:, None], k.copy())
+        self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, 0][:, None], k.copy())
+
+        self.model_u.update_model(False)
+        self.model_u.initialize_parameter()
+        self.model_u[:] = np.loadtxt(directory+'regression_model_u.npy')
+        self.model_u.update_model(True)
+
+        self.model_v.update_model(False)
+        self.model_v.initialize_parameter()
+        self.model_v[:] = np.loadtxt(directory+'regression_model_v.npy')
+        self.model_v.update_model(True)
 
 if __name__ == "__main__":
 
@@ -314,4 +373,12 @@ if __name__ == "__main__":
     regression.initialize_samples(nsamples=30, trajectory=trajectory)
     regression.run_model()
 
-    regression.plot_errors()
+    print(regression.model_u.param_array)
+    print(regression.trajectory.intermediates)
+
+    regression.save_data_to_file("/Users/joshua/Desktop/")
+
+    regression.load_data_from_file("/Users/joshua/Desktop/")
+
+    print(regression.model_u.param_array)
+    print(regression.trajectory.intermediates)

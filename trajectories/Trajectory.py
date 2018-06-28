@@ -108,7 +108,21 @@ class Trajectory:
     def get_params(self):
         return self.initial, self.positions, self.intermediates
 
+    def save_positions_to_file(self):
+        np.savetxt("/Users/joshua/Desktop/trajectory_data.csv", self.intermediates, fmt='%.6e', delimiter=',')
+
+    def load_positions_from_file(self):
+        self.intermediates = np.loadtxt("/Users/joshua/Desktop/trajectory_data.csv", delimiter=',')
 
 
+if __name__ == "__main__":
+
+    trajectory = Trajectory(nsamples=50, integration_time=30, n_timesteps=30)
+    trajectory.lagtransport()
+    trajectory.save_positions_to_file()
+    print(trajectory.intermediates)
+
+    trajectory.load_positions_from_file()
+    print(trajectory.intermediates)
 
 
