@@ -8,7 +8,9 @@ import matplotlib.pylab as pl
 
 class Regression:
 
-    def __init__(self):
+    def __init__(self, dim=3):
+
+        self.dim = dim
 
         self.x = np.empty(shape=(1, 1))
         self.y = np.empty(shape=(1, 1))
@@ -56,9 +58,15 @@ class Regression:
         # X and Y are reshaped so as to be able to be read off as (y, x) coordinate pairs
         self.X = self.X.reshape([self.X.size, 1])
         self.Y = self.Y.reshape([self.Y.size, 1])
-
-        # A 500 X 2 2D array contatenating (y, x) coordinate points that form a grid
         self.grid_points = np.concatenate([self.Y, self.X], axis=1)
+
+        if self.dim == 3:
+
+            T = np.ones(self.Y.size)
+            T = T.reshape([T.size, 1])
+
+            # A 500 X 2 2D array contatenating (y, x) coordinate points that form a grid
+            self.grid_points = np.concatenate([T, self.grid_points], axis=1)
 
     def initialize_samples(self, nsamples, obs=None, Xo=None, trajectory=None, random=True):
 
@@ -76,6 +84,14 @@ class Regression:
                 self.obs = np.concatenate([V[ii, 0][:, None], U[ii, 0][:, None]], axis=1)
                 self.Xo = np.concatenate([self.Y[ii, 0][:, None], self.X[ii, 0][:, None]], axis=1)
 
+                if self.dim == 3:
+
+                    T = np.ones(self.v.size)
+                    T = T.reshape([T.size, 1])
+
+                    self.obs = np.concatenate([T[ii, 0][:, None], self.obs], axis=1)
+                    self.Xo = np.concatenate([T[ii, 0][:, None], self.Xo], axis=1)
+
             if trajectory is not None:
 
                 self.trajectory = trajectory
@@ -84,16 +100,23 @@ class Regression:
                 inter = self.trajectory.get_intermediates()
 
                 vels = np.apply_along_axis(self.trajectory.get_velocity, 1, inter)
-
                 self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
                 self.Xo = np.concatenate([inter[:, 1][:, None], inter[:, 0][:, None]], axis=1)
 
+                if self.dim == 3:
+
+                    times = self.trajectory.get_times()
+
+                    self.obs = np.concatenate([times[:, 0][:, None], self.obs], axis=1)
+                    self.Xo = np.concatenate([times[:, 0][:, None], self.Xo], axis=1)
+
+
     def run_model(self):
 
-        k = GPy.kern.RBF(input_dim=2, variance=1)
+        k = GPy.kern.RBF(input_dim=self.dim)
 
-        model_u = GPy.models.GPRegression(self.Xo, self.obs[:, 1][:, None], k.copy())  # How does this work? What is the output?
-        model_v = GPy.models.GPRegression(self.Xo, self.obs[:, 0][:, None], k.copy())
+        model_u = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim-1][:, None], k.copy())  # How does this work? What is the output?
+        model_v = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim-2][:, None], k.copy())
 
         model_u.optimize_restarts(num_restarts=5, verbose=False)
         model_v.optimize_restarts(num_restarts=5, verbose=False)
@@ -170,7 +193,7 @@ class Regression:
         plot = fig1.add_subplot(1, 2, 1, aspect='equal')
         plot.quiver(self.x[::self.ds], self.y[::self.ds], self.u[::self.ds, ::self.ds], self.v[::self.ds, ::self.ds], scale=self.scale)
         plot.streamplot(self.x, self.y, self.u, self.v)
-        plot.plot(self.Xo[:, 1], self.Xo[:, 0], 'og', markersize=self.marker_size)
+        plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'og', markersize=self.marker_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
         plot.set_title('Original Velocity Field (30 samples)', size=self.text_size)
@@ -179,7 +202,7 @@ class Regression:
         plot = fig1.add_subplot(1, 2, 2, aspect='equal')
         plot.quiver(self.x[::self.ds], self.y[::self.ds], self.ur[::self.ds, ::self.ds], self.vr[::self.ds, ::self.ds], scale=self.scale)
         plot.streamplot(self.x, self.y, self.ur, self.vr)
-        plot.plot(self.Xo[:, 1], self.Xo[:, 0], 'og', markersize=self.marker_size)
+        plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'og', markersize=self.marker_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
         plot.set_title('GPR Velocity Field (30 samples)', size=self.text_size)
@@ -198,7 +221,7 @@ class Regression:
         plot = fig2.add_subplot(1, 3, 1, aspect='equal')
         im1 = plot.imshow(ue_raw, vmin=0, vmax=0.5, origin='center', extent=plot_extent,
                           cmap='jet')
-        plot.plot(self.Xo[:, 1], self.Xo[:, 0], 'or', markersize=self.marker_size)
+        plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'or', markersize=self.marker_size)
         plot.set_title("GPR Abs. Error U", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
@@ -207,7 +230,7 @@ class Regression:
         plot = fig2.add_subplot(1, 3, 2, aspect='equal')
         im2 = plot.imshow(ve_raw, vmin=0, vmax=0.5, origin='center', extent=plot_extent,
                           cmap='jet')
-        plot.plot(self.Xo[:, 1], self.Xo[:, 0], 'or', markersize=self.marker_size)
+        plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'or', markersize=self.marker_size)
         plot.set_title("GPR Abs. Error V", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
@@ -216,7 +239,7 @@ class Regression:
         plot = fig2.add_subplot(1, 3, 3, aspect='equal')
         im3 = plot.imshow(ea, vmin=0, vmax=0.5, origin='center', extent=plot_extent,
                           cmap='jet')
-        plot.plot(self.Xo[:, 1], self.Xo[:, 0], 'or', markersize=self.marker_size)
+        plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'or', markersize=self.marker_size)
         plot.set_title("GPR Abs. Error", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
@@ -235,7 +258,7 @@ class Regression:
 
         plot = fig3.add_subplot(1, 3, 1, aspect='equal')
         im3 = plot.imshow(ue_scaled, vmin=0, vmax=10, origin='center', extent=plot_extent, cmap='jet')
-        plot.plot(self.Xo[:, 1], self.Xo[:, 0], 'or', markersize=self.marker_size)
+        plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'or', markersize=self.marker_size)
         plot.set_title("GPR Rel. Error U", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
@@ -243,7 +266,7 @@ class Regression:
 
         plot = fig3.add_subplot(1, 3, 2, aspect='equal')
         im3 = plot.imshow(ve_scaled, vmin=0, vmax=10, origin='center', extent=plot_extent, cmap='jet')
-        plot.plot(self.Xo[:, 1], self.Xo[:, 0], 'or', markersize=self.marker_size)
+        plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'or', markersize=self.marker_size)
         plot.set_title("GPR Rel. Error U", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
@@ -251,7 +274,7 @@ class Regression:
 
         plot = fig3.add_subplot(1, 3, 3, aspect='equal')
         im3 = plot.imshow(er, vmin=0, vmax=10, origin='center', extent=plot_extent, cmap='jet')
-        plot.plot(self.Xo[:, 1], self.Xo[:, 0], 'or', markersize=self.marker_size)
+        plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'or', markersize=self.marker_size)
         plot.set_title("GPR Rel. Error U", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
@@ -274,7 +297,7 @@ class Regression:
 
         plot = fig3.add_subplot(1, 3, 1, aspect='equal')
         im5 = plot.imshow(ku, vmin=0, vmax=0.5, origin='center', extent=plot_extent, cmap='jet')
-        plot.plot(self.Xo[:, 1], self.Xo[:, 0], 'or', markersize=self.marker_size)
+        plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'or', markersize=self.marker_size)
         plot.set_title("GPR Ku (Standard Deviation)", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
@@ -282,7 +305,7 @@ class Regression:
 
         plot = fig3.add_subplot(1, 3, 2, aspect='equal')
         im6 = plot.imshow(kv, vmin=0, vmax=0.5, origin='center', extent=plot_extent, cmap='jet')
-        plot.plot(self.Xo[:, 1], self.Xo[:, 0], 'or', markersize=self.marker_size)
+        plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'or', markersize=self.marker_size)
         plot.set_title("GPR Ku (Standard Deviation)", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
@@ -291,7 +314,7 @@ class Regression:
         plot = fig3.add_subplot(1, 3, 3, aspect='equal')
         im7 = plot.imshow(np.sqrt(np.divide(np.add(np.power(raw_ku, 2), np.power(raw_kv, 2)), 2)), vmin=0, vmax=0.5,
                           origin='center', extent=plot_extent, cmap='jet')
-        plot.plot(self.Xo[:, 1], self.Xo[:, 0], 'or', markersize=self.marker_size)
+        plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'or', markersize=self.marker_size)
         plot.set_title("GPR Ku (Standard Deviation)", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
@@ -311,7 +334,6 @@ class Regression:
         self.plot_kukv(show=False)
 
         pl.show()
-
 
     def save_data_to_file(self, directory):
         np.savetxt(directory+"regression_x.csv", self.x, fmt="%.6e", delimiter=',')
@@ -366,19 +388,11 @@ class Regression:
 
 if __name__ == "__main__":
 
-    regression = Regression()
+    regression = Regression(dim=3)
 
     trajectory = Trajectory(nsamples=50, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
 
     regression.initialize_samples(nsamples=30, trajectory=trajectory)
     regression.run_model()
 
-    print(regression.model_u.param_array)
-    print(regression.trajectory.intermediates)
-
-    regression.save_data_to_file("/Users/joshua/Desktop/")
-
-    regression.load_data_from_file("/Users/joshua/Desktop/")
-
-    print(regression.model_u.param_array)
-    print(regression.trajectory.intermediates)
+    regression.plot_errors()

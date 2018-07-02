@@ -21,6 +21,7 @@ class Trajectory:
         self.initial = np.empty(shape=(1, 1))
         self.positions = np.empty(shape=(1, 1))
         self.intermediates = np.empty(shape=(1, 1))
+        self.times = np.empty(shape=(1, 1))
 
     def rk4_step(self, pos, time, dt, dim):
         ua = self.get_velocity(pos, time, dim)
@@ -83,6 +84,7 @@ class Trajectory:
         dt = self.integration_time / self.n_timesteps
 
         temp_pos = []
+        times = []
 
         init = Initializations(positions=self.positions, n_particles=self.n_particles, density=self.density)
 
@@ -93,17 +95,25 @@ class Trajectory:
 
         self.initial = np.copy(self.positions)
 
+        step = 0
+
         for i in range(self.n_timesteps):
             time = i * dt
+
             for j in range(self.n_particles):
                 self.positions[j] = self.rk4_step(self.positions[j], time, dt, n_dims)
                 if i % isnap == 0:
                     temp_pos.append(np.copy(self.positions[j]))
+                    times.append([time])
 
+        self.times = np.array(times)
         self.intermediates = np.array(temp_pos)
 
     def get_intermediates(self):
         return self.intermediates
+
+    def get_times(self):
+        return self.times
 
     def get_params(self):
         return self.initial, self.positions, self.intermediates
