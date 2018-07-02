@@ -3,6 +3,7 @@ import enum
 from trajectories.Initializations import Initializations
 
 
+
 class Pattern(enum.Enum):
     random = 1
     grid = 2
@@ -94,8 +95,6 @@ class Trajectory:
             self.positions = init.initialize_particles_random()
 
         self.initial = np.copy(self.positions)
-
-        step = 0
 
         for i in range(self.n_timesteps):
             time = i * dt

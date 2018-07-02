@@ -53,9 +53,8 @@ class Initializations:
 
         p = self.positions
 
-        for i in range(1):
-            for j in range(self.n_particles):
-                p[j][0] = x[x_choices[j]]
-                p[j][1] = y[y_choices[j]]
+        for j in range(self.n_particles):
+            p[j][0] = x[x_choices[j]]
+            p[j][1] = y[y_choices[j]]
 
         return p

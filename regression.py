@@ -2,6 +2,8 @@ import numpy as np
 import GPy
 from velocity_fields import spiral_vf as svf
 from trajectories.Trajectory import Trajectory, Pattern
+from trajectories.Initializations import Initializations
+from trajectories import get_velocity as vel
 import os
 import matplotlib.pylab as pl
 
@@ -73,47 +75,49 @@ class Regression:
         if obs is not None and Xo is not None:
             self.obs = obs
             self.Xo = Xo
+            return
+
+        if random:
+
+            init = Initializations(np.empty(shape=(nsamples, self.dim)), nsamples)
+            grid_pos = init.initialize_particles_random()
+
+            vels = np.apply_along_axis(vel.get_velocity, 1, grid_pos[:, 0:2])
+            self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
+            self.Xo = np.concatenate([grid_pos[:, 1][:, None], grid_pos[:, 0][:, None]], axis=1)
+
         else:
 
-            if random:
+            init = Initializations(np.empty(shape=(nsamples, self.dim)), nsamples, density=0.6)
+            grid_pos = init.initialize_particles_grid()
 
-                ii = np.random.randint(0, self.u.size, nsamples)
-                U = self.u.reshape([self.u.size, 1])
-                V = self.v.reshape([self.v.size, 1])
+            vels = np.apply_along_axis(vel.get_velocity, 1, grid_pos[:, 0:2])
+            self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
+            self.Xo = np.concatenate([grid_pos[:, 1][:, None], grid_pos[:, 0][:, None]], axis=1)
 
-                self.obs = np.concatenate([V[ii, 0][:, None], U[ii, 0][:, None]], axis=1)
-                self.Xo = np.concatenate([self.Y[ii, 0][:, None], self.X[ii, 0][:, None]], axis=1)
 
-                if self.dim == 3:
+        if trajectory is not None:
 
-                    T = np.ones(self.v.size)
-                    T = T.reshape([T.size, 1])
+            self.trajectory = trajectory
 
-                    self.obs = np.concatenate([T[ii, 0][:, None], self.obs], axis=1)
-                    self.Xo = np.concatenate([T[ii, 0][:, None], self.Xo], axis=1)
+            self.trajectory.lagtransport()
+            inter = self.trajectory.get_intermediates()
 
-            if trajectory is not None:
+            vels = np.apply_along_axis(self.trajectory.get_velocity, 1, inter)
+            self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
+            self.Xo = np.concatenate([inter[:, 1][:, None], inter[:, 0][:, None]], axis=1)
 
-                self.trajectory = trajectory
+            if self.dim == 3:
 
-                self.trajectory.lagtransport()
-                inter = self.trajectory.get_intermediates()
+                times = self.trajectory.get_times()
 
-                vels = np.apply_along_axis(self.trajectory.get_velocity, 1, inter)
-                self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
-                self.Xo = np.concatenate([inter[:, 1][:, None], inter[:, 0][:, None]], axis=1)
-
-                if self.dim == 3:
-
-                    times = self.trajectory.get_times()
-
-                    self.obs = np.concatenate([times[:, 0][:, None], self.obs], axis=1)
-                    self.Xo = np.concatenate([times[:, 0][:, None], self.Xo], axis=1)
+                self.obs = np.concatenate([times[:, 0][:, None], self.obs], axis=1)
+                self.Xo = np.concatenate([times[:, 0][:, None], self.Xo], axis=1)
 
 
     def run_model(self):
 
-        k = GPy.kern.RBF(input_dim=self.dim)
+        k = GPy.kern.RBF(input_dim=self.dim, ARD=True)
 
         model_u = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim-1][:, None], k.copy())  # How does this work? What is the output?
         model_v = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim-2][:, None], k.copy())
@@ -390,9 +394,12 @@ if __name__ == "__main__":
 
     regression = Regression(dim=3)
 
-    trajectory = Trajectory(nsamples=50, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
+    trajectory = Trajectory(nsamples=50, integration_time=30, n_timesteps=60, pattern=Pattern.grid, density=0.6)
 
-    regression.initialize_samples(nsamples=30, trajectory=trajectory)
+    regression.initialize_samples(nsamples=60, trajectory=trajectory)
     regression.run_model()
+
+    #print(regression.model_u.kern.lengthscale[:])
+    #print(regression.model_v.kern.lengthscale[:])
 
     regression.plot_errors()
