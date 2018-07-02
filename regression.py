@@ -119,26 +119,42 @@ class Regression:
 
         if kernel is None:
             k = GPy.kern.RBF(input_dim=self.dim, ARD=True)
+
+            self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim - 1][:, None], k.copy())
+            self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim - 2][:, None], k.copy())
+
+            self.model_u.optimize_restarts(num_restarts=5, verbose=False)
+            self.model_v.optimize_restarts(num_restarts=5, verbose=False)
+
+            Ur, Ku = self.model_u.predict(self.grid_points)  # Kr = posterior covariance
+            Vr, Kv = self.model_v.predict(self.grid_points)
+
+            # Reshape the output velocity component matrices to be the same size and shape as
+            # the inital matrices of x, y points
+            self.ur = np.reshape(Ur, [self.y.size, self.x.size])
+            self.vr = np.reshape(Vr, [self.y.size, self.x.size])
+
+            self.ku = np.reshape(Ku, [self.y.size, self.x.size])
+            self.kv = np.reshape(Kv, [self.y.size, self.x.size])
+
         else:
             self.format_obs()
+
             k = kernel
 
-        self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim-1][:, None], k.copy())
-        self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim-2][:, None], k.copy())
+            self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, 0][:, None], k.copy())
 
-        self.model_u.optimize_restarts(num_restarts=5, verbose=False)
-        self.model_v.optimize_restarts(num_restarts=5, verbose=False)
+            self.model_u.optimize_restarts(num_restarts=5, verbose=False)
 
-        Ur, Ku = self.model_u.predict(self.grid_points)  # Kr = posterior covariance
-        Vr, Kv = self.model_v.predict(self.grid_points)
+            Ur, Ku = self.model_u.predict(self.grid_points)  # Kr = posterior covariance
 
-        # Reshape the output velocity component matrices to be the same size and shape as
-        # the inital matrices of x, y points
-        self.ur = np.reshape(Ur, [self.y.size, self.x.size])
-        self.vr = np.reshape(Vr, [self.y.size, self.x.size])
+            # Reshape the output velocity component matrices to be the same size and shape as
+            # the inital matrices of x, y points
+            self.ur = np.reshape(Ur[:Ur.size//2], [self.y.size, self.x.size])
+            self.vr = np.reshape(Ur[Ur.size//2:], [self.y.size, self.x.size])
 
-        self.ku = np.reshape(Ku, [self.y.size, self.x.size])
-        self.kv = np.reshape(Kv, [self.y.size, self.x.size])
+            self.ku = np.reshape(Ku[:Ur.size//2], [self.y.size, self.x.size])
+            self.kv = np.reshape(Ku[Ur.size//2:], [self.y.size, self.x.size])
 
     def get_params(self):
         return self.x, self.y, self.u, self.v, self.ur, self.vr, self.Xo, self.ku, self.kv
@@ -393,21 +409,18 @@ class Regression:
 
     def format_obs(self):
 
-        us = self.obs[:, 1][:, None]
-        vs = self.obs[:, 0][:, None]
-        #ts = self.obs[:, 0][:, None]
-
-        #us = np.concatenate([ts, us], axis=1)
-        #vs = np.concatenate([ts, vs], axis=1)
+        us = self.obs[:, 2][:, None]
+        vs = self.obs[:, 1][:, None]
 
         self.obs = np.concatenate([us, vs], axis=0)
 
+        print("FORMAT OBS")
         print(self.obs)
 
 
 if __name__ == "__main__":
 
-    regression = Regression(dim=2)
+    regression = Regression(dim=3)
 
     div_k = dfk.DivFreeK(3)
     curl_k = cfk.CurlFreeK(3)
@@ -417,14 +430,11 @@ if __name__ == "__main__":
     trajectory = Trajectory(nsamples=30, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
 
     regression.initialize_samples(nsamples=60, trajectory=trajectory)
-    regression.run_model()
-
-    #print(regression.model_u.kern.lengthscale[:])
-    #print(regression.model_v.kern.lengthscale[:])
+    regression.run_model(kernel=kernel)
 
     np.set_printoptions(threshold=np.nan)
 
-    #print(regression.obs)
-    #print(regression.Xo)
-
     regression.plot_errors()
+
+    print(regression.model_u.kern)
+    print(regression.model_v.kern)
