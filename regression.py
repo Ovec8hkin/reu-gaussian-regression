@@ -4,6 +4,7 @@ from velocity_fields import spiral_vf as svf
 from trajectories.Trajectory import Trajectory, Pattern
 from trajectories.Initializations import Initializations
 from trajectories import get_velocity as vel
+from kernels import CurlFreeKernel as cfk, DivFreeKernel as dfk
 import os
 import matplotlib.pylab as pl
 
@@ -95,7 +96,6 @@ class Regression:
             self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
             self.Xo = np.concatenate([grid_pos[:, 1][:, None], grid_pos[:, 0][:, None]], axis=1)
 
-
         if trajectory is not None:
 
             self.trajectory = trajectory
@@ -115,18 +115,22 @@ class Regression:
                 self.Xo = np.concatenate([times[:, 0][:, None], self.Xo], axis=1)
 
 
-    def run_model(self):
+    def run_model(self, kernel=None):
 
-        k = GPy.kern.RBF(input_dim=self.dim, ARD=True)
+        if kernel is None:
+            k = GPy.kern.RBF(input_dim=self.dim, ARD=True)
+        else:
+            self.format_obs()
+            k = kernel
 
-        model_u = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim-1][:, None], k.copy())  # How does this work? What is the output?
-        model_v = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim-2][:, None], k.copy())
+        self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim-1][:, None], k.copy())
+        self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim-2][:, None], k.copy())
 
-        model_u.optimize_restarts(num_restarts=5, verbose=False)
-        model_v.optimize_restarts(num_restarts=5, verbose=False)
+        self.model_u.optimize_restarts(num_restarts=5, verbose=False)
+        self.model_v.optimize_restarts(num_restarts=5, verbose=False)
 
-        Ur, Ku = model_u.predict(self.grid_points)  # Kr = posterior covariance
-        Vr, Kv = model_v.predict(self.grid_points)
+        Ur, Ku = self.model_u.predict(self.grid_points)  # Kr = posterior covariance
+        Vr, Kv = self.model_v.predict(self.grid_points)
 
         # Reshape the output velocity component matrices to be the same size and shape as
         # the inital matrices of x, y points
@@ -135,9 +139,6 @@ class Regression:
 
         self.ku = np.reshape(Ku, [self.y.size, self.x.size])
         self.kv = np.reshape(Kv, [self.y.size, self.x.size])
-
-        self.model_u = model_u
-        self.model_v = model_v
 
     def get_params(self):
         return self.x, self.y, self.u, self.v, self.ur, self.vr, self.Xo, self.ku, self.kv
@@ -390,16 +391,40 @@ class Regression:
         self.model_v[:] = np.loadtxt(directory+'regression_model_v.npy')
         self.model_v.update_model(True)
 
+    def format_obs(self):
+
+        us = self.obs[:, 1][:, None]
+        vs = self.obs[:, 0][:, None]
+        #ts = self.obs[:, 0][:, None]
+
+        #us = np.concatenate([ts, us], axis=1)
+        #vs = np.concatenate([ts, vs], axis=1)
+
+        self.obs = np.concatenate([us, vs], axis=0)
+
+        print(self.obs)
+
+
 if __name__ == "__main__":
 
-    regression = Regression(dim=3)
+    regression = Regression(dim=2)
 
-    trajectory = Trajectory(nsamples=50, integration_time=30, n_timesteps=60, pattern=Pattern.grid, density=0.6)
+    div_k = dfk.DivFreeK(3)
+    curl_k = cfk.CurlFreeK(3)
+
+    kernel = div_k + curl_k
+
+    trajectory = Trajectory(nsamples=30, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
 
     regression.initialize_samples(nsamples=60, trajectory=trajectory)
     regression.run_model()
 
     #print(regression.model_u.kern.lengthscale[:])
     #print(regression.model_v.kern.lengthscale[:])
+
+    np.set_printoptions(threshold=np.nan)
+
+    #print(regression.obs)
+    #print(regression.Xo)
 
     regression.plot_errors()

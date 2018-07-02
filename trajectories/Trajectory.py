@@ -96,7 +96,7 @@ class Trajectory:
 
         self.initial = np.copy(self.positions)
 
-        for i in range(self.n_timesteps):
+        for i in range(self.n_timesteps+1):
             time = i * dt
 
             for j in range(self.n_particles):
