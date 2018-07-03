@@ -420,7 +420,7 @@ class Regression:
 
 if __name__ == "__main__":
 
-    regression = Regression(dim=3)
+    regression = Regression(dim=2)
 
     div_k = dfk.DivFreeK(3)
     curl_k = cfk.CurlFreeK(3)
@@ -429,12 +429,15 @@ if __name__ == "__main__":
 
     trajectory = Trajectory(nsamples=30, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
 
-    regression.initialize_samples(nsamples=60, trajectory=trajectory)
-    regression.run_model(kernel=kernel)
+    #regression.initialize_samples(nsamples=60, trajectory=trajectory)
+    #regression.run_model(kernel=kernel)
+
+    regression.initialize_samples(nsamples=60)
+    regression.run_model()
 
     np.set_printoptions(threshold=np.nan)
 
     regression.plot_errors()
 
+    print(regression.model_u)
     print(regression.model_u.kern)
-    print(regression.model_v.kern)

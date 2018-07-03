@@ -42,11 +42,13 @@ def show_regression_plot(event):
     if new_plot is not None:
         new_plot.remove()
 
-    Xo = np.concatenate([ys, xs], 1)
-    print(Xo)
-    obs = np.apply_along_axis(get_velocity, 1, Xo)
+    grid_pos = np.concatenate([xs, ys], 1)
 
-    reg = Regression()
+    vels = np.apply_along_axis(get_velocity, 1, grid_pos[:, 0:2])
+    obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
+    Xo = np.concatenate([grid_pos[:, 1][:, None], grid_pos[:, 0][:, None]], axis=1)
+
+    reg = Regression(dim=2)
     reg.initialize_samples(len(Xo), obs=obs, Xo=Xo)
     reg.run_model()
 
@@ -55,7 +57,7 @@ def show_regression_plot(event):
     new_plot = fig.add_subplot(1, 2, 2, aspect='equal')
     new_plot.quiver(x[::ds], y[::ds], ur[::ds, ::ds], vr[::ds, ::ds], scale=scale)
     new_plot.streamplot(x, y, ur, vr)
-    new_plot.plot(Xo[:, 1], Xo[:, 0], 'og', markersize=marker_size)
+    new_plot.plot(Xo[:, 1], Xo[:, 0], 'or', markersize=marker_size)
     new_plot.set_xlim(-5, 5)
     new_plot.set_ylim(-5, 5)
     new_plot.set_title('GPR Velocity Field (' + str(len(xs)) + ' samples)', size=text_size)
