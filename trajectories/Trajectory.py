@@ -57,7 +57,10 @@ class Trajectory:
         lx, ly = 3.0, 3.0
         ratio = 0.8
 
-        exp = np.exp(-(X ** 2) / lx - (Y ** 2) / ly)
+        X2 = np.nan_to_num(X**2)
+        Y2 = np.nan_to_num(Y**2)
+
+        exp = np.exp(-X2/lx - Y2/ly)
         dpdy = ((-2 * A * Y) / ly) * exp
         dpdx = ((-2 * A * X) / lx) * exp
 
@@ -74,13 +77,13 @@ class Trajectory:
 
         velocity = [u, v]
 
-        return np.array(velocity)
+        return np.array(velocity, dtype=np.float64)
 
     def lagtransport(self):
         n_dims = 2
         isnap = 5
 
-        self.positions = np.empty(shape=(self.n_particles, n_dims))
+        self.positions = np.zeros(shape=(self.n_particles, n_dims), dtype=np.float64)
 
         dt = self.integration_time / self.n_timesteps
 
@@ -94,19 +97,28 @@ class Trajectory:
         else:
             self.positions = init.initialize_particles_random()
 
+        #print("POSITION DTYPE: "+str(self.positions.dtype))
+
         self.initial = np.copy(self.positions)
 
         for i in range(self.n_timesteps+1):
             time = i * dt
 
             for j in range(self.n_particles):
+                if j == 16:
+                    print(self.positions[j])
                 self.positions[j] = self.rk4_step(self.positions[j], time, dt, n_dims)
                 if i % isnap == 0:
                     temp_pos.append(np.copy(self.positions[j]))
                     times.append([time])
 
-        self.times = np.array(times)
-        self.intermediates = np.array(temp_pos)
+        self.times = np.array(times, dtype=np.float64)
+        self.intermediates = np.array(temp_pos, dtype=np.float64)
+
+        self.times = np.concatenate([np.zeros(shape=(self.n_particles, 1)), self.times], axis=0)
+        self.intermediates = np.concatenate([self.initial, self.intermediates], axis=0)
+
+        #print(self.intermediates)
 
     def get_intermediates(self):
         return self.intermediates

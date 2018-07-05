@@ -21,7 +21,7 @@ class Initializations:
         return sa
 
     def initialize_particles_grid(self):
-        xrmin, xrmax = -8.0, 8.0
+        xrmin, xrmax = -6.0, 6.0
 
         if self.density is not None:
             dens = self.density
@@ -33,6 +33,9 @@ class Initializations:
         sa = self.create_centered_discrete_grid(xrmin, xrmax, n)
 
         p = self.positions
+
+        print(sa)
+
         ip = 0
         for i in range(n):
             for j in range(n):
@@ -40,7 +43,11 @@ class Initializations:
                 p[ip + j][1] = sa[i]
             ip = ip + n
 
-        return p
+        np_p = np.array(p, dtype=np.float64)
+
+        print(np_p)
+
+        return np_p
 
     def initialize_particles_random(self):
         x = np.arange(-5, 5.1, 0.1)

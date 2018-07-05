@@ -23,8 +23,8 @@ class Regression:
         self.X = np.empty(shape=(1, 1))
         self.Y = np.empty(shape=(1, 1))
 
-        self.obs = np.empty(shape=(1, 1))
-        self.Xo = np.empty(shape=(1, 1))
+        self.obs = np.empty(shape=(1, 1), dtype=np.float64)
+        self.Xo = np.empty(shape=(1, 1), dtype=np.float64)
 
         self.grid_points = np.empty(shape=(1, 1))
 
@@ -414,30 +414,22 @@ class Regression:
 
         self.obs = np.concatenate([us, vs], axis=0)
 
-        print("FORMAT OBS")
-        print(self.obs)
-
 
 if __name__ == "__main__":
 
-    regression = Regression(dim=2)
+    regression = Regression(dim=3)
 
     div_k = dfk.DivFreeK(3)
     curl_k = cfk.CurlFreeK(3)
 
     kernel = div_k + curl_k
 
-    trajectory = Trajectory(nsamples=30, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
+    trajectory = Trajectory(nsamples=10, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
 
-    #regression.initialize_samples(nsamples=60, trajectory=trajectory)
-    #regression.run_model(kernel=kernel)
+    regression.initialize_samples(nsamples=10, trajectory=trajectory)
+    regression.run_model(kernel=kernel)
 
-    regression.initialize_samples(nsamples=60)
-    regression.run_model()
-
-    np.set_printoptions(threshold=np.nan)
+    #regression.initialize_samples(nsamples=60)
+    #regression.run_model()
 
     regression.plot_errors()
-
-    print(regression.model_u)
-    print(regression.model_u.kern)

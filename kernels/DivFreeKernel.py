@@ -52,6 +52,7 @@ class DivFreeK(Kern):
                             np.concatenate([Byx, Bx], axis=1)], axis=0)
         C = np.concatenate([np.concatenate([C, C], axis=1),
                             np.concatenate([C, C], axis=1)], axis=0)
+
         return C * A
 
     def Kdiag(self, X):
