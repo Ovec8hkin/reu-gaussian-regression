@@ -97,16 +97,12 @@ class Trajectory:
         else:
             self.positions = init.initialize_particles_random()
 
-        #print("POSITION DTYPE: "+str(self.positions.dtype))
-
         self.initial = np.copy(self.positions)
 
         for i in range(self.n_timesteps+1):
             time = i * dt
 
             for j in range(self.n_particles):
-                if j == 16:
-                    print(self.positions[j])
                 self.positions[j] = self.rk4_step(self.positions[j], time, dt, n_dims)
                 if i % isnap == 0:
                     temp_pos.append(np.copy(self.positions[j]))
@@ -117,8 +113,6 @@ class Trajectory:
 
         self.times = np.concatenate([np.zeros(shape=(self.n_particles, 1)), self.times], axis=0)
         self.intermediates = np.concatenate([self.initial, self.intermediates], axis=0)
-
-        #print(self.intermediates)
 
     def get_intermediates(self):
         return self.intermediates

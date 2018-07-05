@@ -34,8 +34,6 @@ class Initializations:
 
         p = self.positions
 
-        print(sa)
-
         ip = 0
         for i in range(n):
             for j in range(n):
@@ -44,8 +42,6 @@ class Initializations:
             ip = ip + n
 
         np_p = np.array(p, dtype=np.float64)
-
-        print(np_p)
 
         return np_p
 
