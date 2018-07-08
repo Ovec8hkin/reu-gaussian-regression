@@ -14,7 +14,7 @@ class Initializations:
 
         print(ds)
 
-        sa = np.empty(shape=(nptc + 1, 1))
+        sa = np.zeros(shape=(nptc + 1, 1))
         for i in range(nptc + 1):
             sa[i] = i * ds + smin
 

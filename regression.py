@@ -80,7 +80,7 @@ class Regression:
 
         if random:
 
-            init = Initializations(np.empty(shape=(nsamples, self.dim)), nsamples)
+            init = Initializations(np.zeros(shape=(nsamples, self.dim)), nsamples)
             grid_pos = init.initialize_particles_random()
 
             vels = np.apply_along_axis(vel.get_velocity, 1, grid_pos[:, 0:2])
@@ -89,7 +89,7 @@ class Regression:
 
         else:
 
-            init = Initializations(np.empty(shape=(nsamples, self.dim)), nsamples, density=0.6)
+            init = Initializations(np.zeros(shape=(nsamples, self.dim)), nsamples, density=0.6)
             grid_pos = init.initialize_particles_grid()
 
             vels = np.apply_along_axis(vel.get_velocity, 1, grid_pos[:, 0:2])

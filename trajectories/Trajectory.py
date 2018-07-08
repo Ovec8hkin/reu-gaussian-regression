@@ -19,10 +19,10 @@ class Trajectory:
         self.density = density
         self.pattern = pattern
 
-        self.initial = np.empty(shape=(1, 1))
-        self.positions = np.empty(shape=(1, 1))
-        self.intermediates = np.empty(shape=(1, 1))
-        self.times = np.empty(shape=(1, 1))
+        self.initial = np.zeros(shape=(1, 1))
+        self.positions = np.zeros(shape=(1, 1))
+        self.intermediates = np.zeros(shape=(1, 1))
+        self.times = np.zeros(shape=(1, 1))
 
     def rk4_step(self, pos, time, dt, dim):
         ua = self.get_velocity(pos, time, dim)
