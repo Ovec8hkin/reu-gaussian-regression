@@ -29,6 +29,7 @@ class CurlFreeK(Kern):
 
     def K(self, X, X2):
         if X2 is None: X2 = X
+
         dt = X[:, 0][:, None] - X2[:, 0]
         dy = X[:, 1][:, None] - X2[:, 1]
         dx = X[:, 2][:, None] - X2[:, 2]

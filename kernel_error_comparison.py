@@ -30,15 +30,23 @@ def main():
     rbf_errors = []
     cdk_errors = []
 
-    bounds = np.arange(10, 500, 20)
+    sample = 10
 
-    for sample in bounds:
-        rbf_e, cdk_e = run_models(samples=sample)
-
-        rbf_errors.append(rbf_e[0])
-        cdk_errors.append(cdk_e[0])
+    while sample <= 70:
 
         print(sample)
+
+        try:
+            rbf_e, cdk_e = run_models(samples=sample)
+
+            rbf_errors.append(rbf_e[0])
+            cdk_errors.append(cdk_e[0])
+
+            sample = sample + 20
+
+        except:
+            print("An error ocurred")
+            pass
 
     np.savetxt("rbf_errors.csv", rbf_errors)
     np.savetxt("cdf_errors.csv", cdk_errors)

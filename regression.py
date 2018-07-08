@@ -424,7 +424,7 @@ if __name__ == "__main__":
 
     kernel = div_k + curl_k
 
-    trajectory = Trajectory(nsamples=10, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
+    trajectory = Trajectory(nsamples=50, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
 
     regression.initialize_samples(nsamples=10, trajectory=trajectory)
     regression.run_model(kernel=kernel)
