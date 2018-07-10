@@ -33,11 +33,12 @@ def main():
     sample = 20
     print("Start2")
     while sample <= 300:
-        
+
         print(sample)
 
         try:
             rbf_e, cdk_e = run_models(samples=sample)
+
             rbf_errors.append(rbf_e[0])
             cdk_errors.append(cdk_e[0])
 
@@ -51,7 +52,7 @@ def main():
             print(str(e))
             pass
 
-    
+
     #np.savetxt("rbf_errors.csv", rbf_errors)
     #np.savetxt("cdf_errors.csv", cdk_errors)
 

@@ -114,6 +114,10 @@ class Regression:
                 self.obs = np.concatenate([times[:, 0][:, None], self.obs], axis=1)
                 self.Xo = np.concatenate([times[:, 0][:, None], self.Xo], axis=1)
 
+                print(self.obs)
+                print("\n")
+                print(self.Xo)
+
 
     def run_model(self, kernel=None):
 
@@ -424,7 +428,7 @@ if __name__ == "__main__":
 
     kernel = div_k + curl_k
 
-    trajectory = Trajectory(nsamples=50, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
+    trajectory = Trajectory(nsamples=10, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
 
     regression.initialize_samples(nsamples=10, trajectory=trajectory)
     regression.run_model(kernel=kernel)
