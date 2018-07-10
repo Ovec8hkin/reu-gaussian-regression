@@ -123,8 +123,8 @@ class Regression:
             self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim - 1][:, None], k.copy())
             self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim - 2][:, None], k.copy())
 
-            self.model_u.optimize_restarts(num_restarts=5, verbose=False)
-            self.model_v.optimize_restarts(num_restarts=5, verbose=False)
+            self.model_u.optimize_restarts(num_restarts=3, verbose=False)
+            self.model_v.optimize_restarts(num_restarts=3, verbose=False)
 
             Ur, Ku = self.model_u.predict(self.grid_points)  # Kr = posterior covariance
             Vr, Kv = self.model_v.predict(self.grid_points)
@@ -144,7 +144,7 @@ class Regression:
 
             self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, 0][:, None], k.copy())
 
-            self.model_u.optimize_restarts(num_restarts=5, verbose=False)
+            self.model_u.optimize_restarts(num_restarts=3, verbose=False)
 
             Ur, Ku = self.model_u.predict(self.grid_points)  # Kr = posterior covariance
 

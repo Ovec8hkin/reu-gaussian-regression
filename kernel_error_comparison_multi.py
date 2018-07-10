@@ -33,7 +33,7 @@ def main():
     bounds = np.arange(10, 520, 20)
 
     for sample in bounds:
-        attempt = 0
+        attempt = 1
         local_rbf = []
         local_cdk = []
         while attempt <= 5:
@@ -56,11 +56,15 @@ def main():
         rbf = np.mean(local_rbf)
         cdk = np.mean(local_cdk)
 
+        print(rbf)
+
         rbf_errors.append(rbf)
         cdk_errors.append(cdk)
 
-    np.savetxt("rbf_errors.csv", rbf_errors)
-    np.savetxt("cdf_errors.csv", cdk_errors)
+        np.savetxt("rbf_errors.csv", rbf_errors)
+        np.savetxt("cdf_errors.csv", cdk_errors)
+
+        print("Saved")
 
 if __name__ == "__main__":
     main()
