@@ -20,7 +20,7 @@ if __name__ == "__main__":
 
     rbf = np.absolute(import_array("/Users/joshua/Desktop/rbf_errors.csv"))
     cdf = np.absolute(import_array("/Users/joshua/Desktop/cdf_errors.csv"))
-    x = np.arange(20, 340, 20)
+    x = np.arange(20, 320, 20)
 
 
     logx, log_rbf, ys_r = compute_regression_line(x, rbf)

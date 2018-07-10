@@ -6,7 +6,7 @@ from kernels import CurlFreeKernel as cfk, DivFreeKernel as dfk
 
 
 def run_models(samples):
-    trajectory = Trajectory(nsamples=samples, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
+    trajectory = Trajectory(nsamples=samples, integration_time=30, n_timesteps=30, pattern=Pattern.grid)
 
     div_k = dfk.DivFreeK(3)
     curl_k = cfk.CurlFreeK(3)
@@ -30,7 +30,7 @@ def main():
     rbf_errors = []
     cdk_errors = []
 
-    bounds = np.arange(10, 520, 20)
+    bounds = np.arange(10, 300, 20)
 
     for sample in bounds:
         attempt = 1
