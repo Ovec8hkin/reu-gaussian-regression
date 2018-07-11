@@ -93,12 +93,8 @@ class Regression:
 
                 times = self.trajectory.get_times()
 
-                print(times.size)
-
                 self.obs = np.concatenate([times[:, 0][:, None], self.obs], axis=1)
                 self.Xo = np.concatenate([times[:, 0][:, None], self.Xo], axis=1)
-
-                np.set_printoptions(threshold=np.nan)
 
             return
 
@@ -140,8 +136,8 @@ class Regression:
             self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim - 1][:, None], k.copy())
             self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim - 2][:, None], k.copy())
 
-            self.model_u.optimize_restarts(num_restarts=5, verbose=False)
-            self.model_v.optimize_restarts(num_restarts=5, verbose=False)
+            self.model_u.optimize_restarts(num_restarts=3, verbose=False)
+            self.model_v.optimize_restarts(num_restarts=3, verbose=False)
 
             Ur, Ku = self.model_u.predict(self.grid_points)  # Kr = posterior covariance
             Vr, Kv = self.model_v.predict(self.grid_points)
@@ -157,8 +153,8 @@ class Regression:
         else:
             self.format_obs()
 
-            print(self.obs)
-            print(self.Xo)
+            #print(self.obs)
+            #print(self.Xo)
 
             k = kernel
 
