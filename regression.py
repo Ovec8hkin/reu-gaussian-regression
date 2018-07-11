@@ -78,6 +78,30 @@ class Regression:
             self.Xo = Xo
             return
 
+        if trajectory is not None:
+
+            self.trajectory = trajectory
+
+            self.trajectory.lagtransport()
+            inter = self.trajectory.get_intermediates()
+
+            vels = np.apply_along_axis(self.trajectory.get_velocity, 1, inter)
+            self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
+            self.Xo = np.concatenate([inter[:, 1][:, None], inter[:, 0][:, None]], axis=1)
+
+            if self.dim == 3:
+
+                times = self.trajectory.get_times()
+
+                print(times.size)
+
+                self.obs = np.concatenate([times[:, 0][:, None], self.obs], axis=1)
+                self.Xo = np.concatenate([times[:, 0][:, None], self.Xo], axis=1)
+
+                np.set_printoptions(threshold=np.nan)
+
+            return
+
         if random:
 
             init = Initializations(np.zeros(shape=(nsamples, self.dim)), nsamples)
@@ -96,39 +120,28 @@ class Regression:
             self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
             self.Xo = np.concatenate([grid_pos[:, 1][:, None], grid_pos[:, 0][:, None]], axis=1)
 
-        if trajectory is not None:
+        if self.dim == 3:
+            times = np.ones(shape=self.obs.shape)
 
-            self.trajectory = trajectory
-
-            self.trajectory.lagtransport()
-            inter = self.trajectory.get_intermediates()
-
-            vels = np.apply_along_axis(self.trajectory.get_velocity, 1, inter)
-            self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
-            self.Xo = np.concatenate([inter[:, 1][:, None], inter[:, 0][:, None]], axis=1)
-
-            if self.dim == 3:
-
-                times = self.trajectory.get_times()
-
-                self.obs = np.concatenate([times[:, 0][:, None], self.obs], axis=1)
-                self.Xo = np.concatenate([times[:, 0][:, None], self.Xo], axis=1)
-
-                print(self.obs)
-                print("\n")
-                print(self.Xo)
-
+            self.obs = np.concatenate([times[:, 0][:, None], self.obs], axis=1)
+            self.Xo = np.concatenate([times[:, 0][:, None], self.Xo], axis=1)
 
     def run_model(self, kernel=None):
 
         if kernel is None:
+
+            print("using rbf kernel")
+
             k = GPy.kern.RBF(input_dim=self.dim, ARD=True)
+
+            print(self.obs)
+            print(self.Xo)
 
             self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim - 1][:, None], k.copy())
             self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim - 2][:, None], k.copy())
 
-            self.model_u.optimize_restarts(num_restarts=3, verbose=False)
-            self.model_v.optimize_restarts(num_restarts=3, verbose=False)
+            self.model_u.optimize_restarts(num_restarts=5, verbose=False)
+            self.model_v.optimize_restarts(num_restarts=5, verbose=False)
 
             Ur, Ku = self.model_u.predict(self.grid_points)  # Kr = posterior covariance
             Vr, Kv = self.model_v.predict(self.grid_points)
@@ -143,6 +156,9 @@ class Regression:
 
         else:
             self.format_obs()
+
+            print(self.obs)
+            print(self.Xo)
 
             k = kernel
 
@@ -428,12 +444,14 @@ if __name__ == "__main__":
 
     kernel = div_k + curl_k
 
-    trajectory = Trajectory(nsamples=10, integration_time=30, n_timesteps=30, pattern=Pattern.grid, density=0.6)
+    trajectory = Trajectory(nsamples=30, integration_time=30, n_timesteps=15, pattern=Pattern.random)
 
-    regression.initialize_samples(nsamples=10, trajectory=trajectory)
-    regression.run_model(kernel=kernel)
+    regression.initialize_samples(nsamples=150, trajectory=trajectory)
+    regression.run_model()
 
     #regression.initialize_samples(nsamples=60)
     #regression.run_model()
+
+    print(regression.model_u.kern.lengthscale[:])
 
     regression.plot_errors()

@@ -8,7 +8,7 @@ def compute_regression_line(x, y):
     logx = np.log10(x)
     logy = np.log10(y)
 
-    coefficients = np.polyfit(logx[1:], logy[1:], 1)
+    coefficients = np.polyfit(logx[:], logy[:], 1)
     polynomial = np.poly1d(coefficients)
     ys = polynomial(logx)
 

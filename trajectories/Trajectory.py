@@ -81,9 +81,9 @@ class Trajectory:
 
     def lagtransport(self):
         n_dims = 2
-        isnap = 5
+        isnap = 1
 
-        self.positions = np.zeros(shape=(self.n_particles, n_dims), dtype=np.float64)
+        self.positions = np.ones(shape=(self.n_particles, n_dims), dtype=np.float64)
 
         dt = self.integration_time / self.n_timesteps
 
@@ -111,9 +111,6 @@ class Trajectory:
         self.times = np.array(times, dtype=np.float64)
         self.intermediates = np.array(temp_pos, dtype=np.float64)
 
-        self.times = np.concatenate([np.zeros(shape=(self.n_particles, 1)), self.times], axis=0)
-        self.intermediates = np.concatenate([self.initial, self.intermediates], axis=0)
-
     def get_intermediates(self):
         return self.intermediates
 
@@ -135,9 +132,9 @@ if __name__ == "__main__":
     trajectory = Trajectory(nsamples=50, integration_time=30, n_timesteps=30)
     trajectory.lagtransport()
     trajectory.save_positions_to_file()
-    print(trajectory.intermediates)
+    #print(trajectory.intermediates)
 
     trajectory.load_positions_from_file()
-    print(trajectory.intermediates)
+    #print(trajectory.intermediates)
 
 

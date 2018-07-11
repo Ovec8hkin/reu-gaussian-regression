@@ -21,7 +21,7 @@ class Initializations:
         return sa
 
     def initialize_particles_grid(self):
-        xrmin, xrmax = -6.0, 6.0
+        xrmin, xrmax = -5.0, 5.0
 
         if self.density is not None:
             dens = self.density
