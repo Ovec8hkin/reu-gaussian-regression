@@ -130,12 +130,12 @@ class Regression:
 
         if kernel is None:
 
-            print("using rbf kernel")
+            #print("using rbf kernel")
 
             k = GPy.kern.RBF(input_dim=self.dim, ARD=True)
 
-            print(self.obs)
-            print(self.Xo)
+            #print(self.obs)
+            #print(self.Xo)
 
             self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim - 1][:, None], k.copy())
             self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, self.dim - 2][:, None], k.copy())
