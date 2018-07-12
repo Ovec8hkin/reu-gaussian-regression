@@ -20,18 +20,18 @@ if __name__ == "__main__":
 
     rbf = np.absolute(import_array("/Users/joshua/Desktop/rbf_errors.csv"))
     cdf = np.absolute(import_array("/Users/joshua/Desktop/cdf_errors.csv"))
-    x = np.arange(20, 320, 20)
 
+    rbf_x = np.arange(1, 500, 20)
+    cdf_x = np.arange(1, 280, 20)
 
-    logx, log_rbf, ys_r = compute_regression_line(x, rbf)
+    logx_r, log_rbf, ys_r = compute_regression_line(rbf_x, rbf)
 
-    logx, log_cdf, ys_c = compute_regression_line(x, cdf)
-
+    logx_c, log_cdf, ys_c = compute_regression_line(cdf_x, cdf)
 
     fig = pl.figure(figsize=(10, 5))
     plot = fig.add_subplot(1, 1, 1, aspect='equal')
-    plot.plot(x, rbf, 'og')
-    plot.plot(x, cdf, 'or')
+    plot.plot(rbf_x, rbf, 'og')
+    plot.plot(cdf_x, cdf, 'or')
     plot.set_autoscaley_on(True)
     plot.set_aspect('auto')
     plot.set_title("Global Average Error vs Number of Samples")
@@ -40,10 +40,10 @@ if __name__ == "__main__":
 
     fig = pl.figure(figsize=(10, 5))
     plot = fig.add_subplot(1, 1, 1, aspect='equal')
-    plot.plot(logx, log_rbf, 'og')
-    plot.plot(logx, ys_r)
-    plot.plot(logx, log_cdf, 'or')
-    plot.plot(logx, ys_c)
+    plot.plot(logx_r, log_rbf, 'og')
+    plot.plot(logx_r, ys_r)
+    plot.plot(logx_c, log_cdf, 'or')
+    plot.plot(logx_c, ys_c)
     plot.set_autoscaley_on(True)
     plot.set_aspect('auto')
     plot.set_title("Global Average Error vs Number of Samples")

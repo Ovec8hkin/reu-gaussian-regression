@@ -83,7 +83,7 @@ class Trajectory:
         n_dims = 2
         isnap = 1
 
-        self.positions = np.ones(shape=(self.n_particles, n_dims), dtype=np.float64)
+        self.positions = np.zeros(shape=(self.n_particles, n_dims), dtype=np.float64)
 
         dt = self.integration_time / self.n_timesteps
 
