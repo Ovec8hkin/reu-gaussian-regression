@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     S, D = np.meshgrid(s, d)
 
-    zs = np.zeros(shape=(S.size, D.size))
+    zs = np.zeros(shape=(len(S), len(D)))
 
     for i in range(len(S)):
         for j in range(len(D)):
@@ -31,4 +31,4 @@ if __name__ == "__main__":
 
             zs[i][j] = e[0]
 
-            np.savetxt("sample_density.csv", delimiter=",")
+            np.savetxt("sample_density.csv", zs, delimiter=",")

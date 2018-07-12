@@ -9,7 +9,9 @@ def import_array(file):
 
 def f(S, D):
 
-    zs = np.zeros(shape=(S.size, D.size))
+    zs = np.zeros(shape=(D.size, S.size))
+
+    print(zs)
 
     for i in range(len(S)):
         for j in range(len(D)):
@@ -42,7 +44,9 @@ if __name__ == "__main__":
 
     S, D = np.meshgrid(s, d)
 
-    z = import_array("/Users/Desktop/sample_density.csv")
+    z = import_array("/Users/joshua/Desktop/sample_density.csv")
+
+    print(z)
 
     fig = pl.figure()
     ax = pl.axes(projection='3d')
