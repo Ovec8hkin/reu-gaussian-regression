@@ -6,7 +6,7 @@ from kernels import CurlFreeKernel as cfk, DivFreeKernel as dfk
 
 
 def run_models(samples):
-    trajectory = Trajectory(nsamples=samples, integration_time=30, n_timesteps=15, pattern=Pattern.random)
+    trajectory = Trajectory(nsamples=samples, integration_time=30, n_timesteps=15, pattern=Pattern.grid)
 
     div_k = dfk.DivFreeK(3)
     curl_k = cfk.CurlFreeK(3)
@@ -26,7 +26,7 @@ def main():
     cdk_errors = []
 
     sample = 1
-    while sample <= 300:
+    while sample <= 500:
 
         print(sample)
 
