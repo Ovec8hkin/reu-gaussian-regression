@@ -39,19 +39,26 @@ def f(S, D):
 
 if __name__ == "__main__":
 
-    s = np.arange(1, 181, 20)
+    s = np.arange(21, 181, 20)
     d = np.arange(0.01, 2.26, 0.25)
 
     S, D = np.meshgrid(s, d)
 
-    z = import_array("/Users/joshua/Desktop/sample_density.csv")
+    z = import_array("/Users/joshua/Desktop/sample_density.csv")[:, 1:]
 
     print(z)
 
+    print(len(z))
+    print(len(z[0]))
+    print(len(s))
+    print(len(d))
+
     fig = pl.figure()
     ax = pl.axes(projection='3d')
+    ax.set_zlim3d(0, 0.01)
+    ax.set_xlim3d(0, 200)
+    ax.set_ylim3d(0, 2.5)
 
-    ax.plot_surface(S, D, z, rstride=1, cstride=1,
-                 cmap='viridis', edgecolor='none')
+    ax.plot_surface(S, D, z, cmap='jet', edgecolor='none')
 
     pl.show()

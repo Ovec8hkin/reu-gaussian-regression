@@ -1,7 +1,5 @@
 import numpy as np
 import GPy
-
-from timeseries_regression import TimeseriesRegression
 from velocity_fields import spiral_vf as svf
 from trajectories.Trajectory import Trajectory, Pattern
 from trajectories.Initializations import Initializations
@@ -9,23 +7,25 @@ from trajectories import get_velocity as vel
 from kernels import CurlFreeKernel as cfk, DivFreeKernel as dfk
 import os
 import matplotlib.pylab as pl
-
 import time
 
 
-class Regression:
+class TimeseriesRegression:
 
-    def __init__(self, dim=2):
+    def __init__(self):
 
-        self.dim = dim
+        self.dim = 3
 
         self.x = np.empty(shape=(1, 1))
         self.y = np.empty(shape=(1, 1))
+        self.t = np.empty(shape=(1, 1))
+
         self.u = np.empty(shape=(1, 1))
         self.v = np.empty(shape=(1, 1))
 
         self.X = np.empty(shape=(1, 1))
         self.Y = np.empty(shape=(1, 1))
+        self.T = np.empty(shape=(1, 1))
 
         self.obs = np.empty(shape=(1, 1), dtype=np.float64)
         self.Xo = np.empty(shape=(1, 1), dtype=np.float64)
@@ -61,15 +61,17 @@ class Regression:
 
     def create_and_shape_grid(self):
         self.X, self.Y = np.meshgrid(self.x, self.y)
+        self.T = np.ones(self.Y.size)
 
         # X and Y are reshaped so as to be able to be read off as (y, x) coordinate pairs
         self.X = self.X.reshape([self.X.size, 1])
         self.Y = self.Y.reshape([self.Y.size, 1])
-        self.grid_points = np.concatenate([self.Y, self.X], axis=1)
+        self.T = self.T.reshape([self.T.size, 1])
+
+        # A 500 X 2 2D array contatenating (y, x) coordinate points that form a grid
+        self.grid_points = np.concatenate([self.T, self.Y, self.X], axis=1)
 
     def initialize_samples(self, nsamples, obs=None, Xo=None, trajectory=None, random=True):
-
-        np.set_printoptions(threshold=np.nan)
 
         if obs is not None and Xo is not None:
             self.obs = obs
@@ -81,56 +83,50 @@ class Regression:
             self.trajectory = trajectory
 
             self.trajectory.lagtransport()
+
             inter = self.trajectory.get_intermediates()
+            vels = np.apply_along_axis(vel.get_velocity, 1, inter)
+            times = self.trajectory.get_times()
 
-            vels = np.apply_along_axis(self.trajectory.get_velocity, 1, inter)
-            self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
-            self.Xo = np.concatenate([inter[:, 1][:, None], inter[:, 0][:, None]], axis=1)
-
-            #print(inter)
+            self.obs = np.concatenate([times[:, 0][:, None], vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
+            self.Xo = np.concatenate([times[:, 0][:, None], inter[:, 1][:, None], inter[:, 0][:, None]], axis=1)
 
             return
+
+        times = np.ones(shape=self.obs.shape)
 
         if random:
             init = Initializations(np.zeros(shape=(nsamples, self.dim)), nsamples)
             grid_pos = init.initialize_particles_random()
         else:
-            init = Initializations(np.zeros(shape=(nsamples, self.dim)), nsamples)
+            init = Initializations(np.zeros(shape=(nsamples, self.dim)), nsamples, density=0.6)
             grid_pos = init.initialize_particles_grid()
 
-        #print(grid_pos)
-
         vels = np.apply_along_axis(vel.get_velocity, 1, grid_pos[:, 0:2])
-        self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
-        self.Xo = np.concatenate([grid_pos[:, 1][:, None], grid_pos[:, 0][:, None]], axis=1)
+
+        self.obs = np.concatenate([times[:, 0][:, None], vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
+        self.Xo = np.concatenate([times[:, 0][:, None], grid_pos[:, 1][:, None], grid_pos[:, 0][:, None]], axis=1)
 
     def run_model(self, kernel=None):
 
         if kernel is None:
 
-            #print("using rbf kernel")
-
             k = GPy.kern.RBF(input_dim=self.dim, ARD=True)
 
-            #print(self.obs)
-            #print(self.Xo)
+            print(time.time())
+
+            self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, 2][:, None], k.copy())
+            self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, 1][:, None], k.copy())
 
             print(time.time())
 
-            self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, 1][:, None], k.copy())
-            self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, 0][:, None], k.copy())
-
-            print(time.time())
-
-            self.model_u.optimize_restarts(num_restarts=3, verbose=True)
-            self.model_v.optimize_restarts(num_restarts=3, verbose=True)
+            self.model_u.optimize_restarts(num_restarts=3, verbose=False)
+            self.model_v.optimize_restarts(num_restarts=3, verbose=False)
 
             print(time.time())
 
             Ur, Ku = self.model_u.predict(self.grid_points)  # Kr = posterior covariance
             Vr, Kv = self.model_v.predict(self.grid_points)
-
-            print(time.time())
 
             # Reshape the output velocity component matrices to be the same size and shape as
             # the inital matrices of x, y points
@@ -142,9 +138,6 @@ class Regression:
 
         else:
             self.format_obs()
-
-            #print(self.obs)
-            #print(self.Xo)
 
             k = kernel
 
@@ -423,35 +416,16 @@ class Regression:
 
 if __name__ == "__main__":
 
+    regression = TimeseriesRegression()
+
     div_k = dfk.DivFreeK(3)
     curl_k = cfk.CurlFreeK(3)
+
     kernel = div_k + curl_k
 
-    # REGULAR REGRESSION TESTS
+    trajectory = Trajectory(nsamples=30, integration_time=30, n_timesteps=15, pattern=Pattern.random)
+    regression.initialize_samples(nsamples=150)
+    regression.initialize_samples(nsamples=150, trajectory=trajectory)
+    regression.run_model(kernel=kernel)
 
-    regression = Regression()
-
-    pattern = Pattern.grid
-    print(time.time())
-    trajectory = Trajectory(nsamples=80, integration_time=30, n_timesteps=15, pattern=pattern)
-    print(time.time())
-    #regression.initialize_samples(nsamples=150, trajectory=trajectory)
-    regression.initialize_samples(nsamples=250, random=False)
-    print(time.time())
-    regression.run_model()
-    print(time.time())
-
-    # TIMESERIES REGRESSION TESTS
-
-    # regression = TimeseriesRegression()
-    #
-    # print(time.time())
-    # trajectory = Trajectory(nsamples=60, integration_time=30, n_timesteps=15, pattern=pattern)
-    # print(time.time())
-    # regression.initialize_samples(nsamples=150, trajectory=trajectory)
-    # #regression.initialize_samples(nsamples=150)
-    # print(time.time())
-    # regression.run_model()
-    # print(time.time())
-    #
-    # regression.plot_errors()
+    regression.plot_errors()
