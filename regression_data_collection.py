@@ -15,6 +15,8 @@ def main():
 
     for d in drifters:
 
+        print(d)
+
         regression = Regression()
 
         trajectory = Trajectory(nsamples=d, integration_time=3600, n_timesteps=48, pattern=Pattern.grid)

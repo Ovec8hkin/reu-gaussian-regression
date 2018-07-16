@@ -120,17 +120,11 @@ class TimeseriesRegression:
 
             k = GPy.kern.RBF(input_dim=self.dim, ARD=True)
 
-            print(time.time())
-
             self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, 2][:, None], k.copy())
             self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, 1][:, None], k.copy())
 
-            print(time.time())
-
             self.model_u.optimize_restarts(num_restarts=3, verbose=False)
             self.model_v.optimize_restarts(num_restarts=3, verbose=False)
-
-            print(time.time())
 
             Ur, Ku = self.model_u.predict(self.grid_points)  # Kr = posterior covariance
             Vr, Kv = self.model_v.predict(self.grid_points)
@@ -434,7 +428,5 @@ if __name__ == "__main__":
     #regression.initialize_samples(nsamples=150)
     regression.initialize_samples(nsamples=30, trajectory=trajectory)
     regression.run_model()
-
-    print(regression.model_u.Gaussian_noise.variance)
 
     #regression.plot_errors()
