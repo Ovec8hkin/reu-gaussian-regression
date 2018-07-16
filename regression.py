@@ -10,8 +10,6 @@ from kernels import CurlFreeKernel as cfk, DivFreeKernel as dfk
 import os
 import matplotlib.pylab as pl
 
-import time
-
 
 class Regression:
 
@@ -53,7 +51,7 @@ class Regression:
         self.scale = 5
 
     def generate_vector_field(self):
-        field = svf.generate_spiral()
+        field = svf.SpiralVectorField().generate_spiral()
         self.x = field[0]
         self.y = field[1]
         self.u = field[3]
@@ -71,6 +69,7 @@ class Regression:
 
         np.set_printoptions(threshold=np.nan)
 
+
         if obs is not None and Xo is not None:
             self.obs = obs
             self.Xo = Xo
@@ -84,10 +83,12 @@ class Regression:
             inter = self.trajectory.get_intermediates()
 
             vels = np.apply_along_axis(self.trajectory.get_velocity, 1, inter)
+
+            gaussian_variance = np.random.normal(0, 0.01, size=vels.shape)
+            vels = vels + gaussian_variance
+
             self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
             self.Xo = np.concatenate([inter[:, 1][:, None], inter[:, 0][:, None]], axis=1)
-
-            #print(inter)
 
             return
 
@@ -98,9 +99,11 @@ class Regression:
             init = Initializations(np.zeros(shape=(nsamples, self.dim)), nsamples)
             grid_pos = init.initialize_particles_grid()
 
-        #print(grid_pos)
-
         vels = np.apply_along_axis(vel.get_velocity, 1, grid_pos[:, 0:2])
+
+        gaussian_variance = np.random.normal(0, 0.01, size=vels.shape)
+        vels = vels + gaussian_variance
+
         self.obs = np.concatenate([vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
         self.Xo = np.concatenate([grid_pos[:, 1][:, None], grid_pos[:, 0][:, None]], axis=1)
 
@@ -108,29 +111,16 @@ class Regression:
 
         if kernel is None:
 
-            #print("using rbf kernel")
-
             k = GPy.kern.RBF(input_dim=self.dim, ARD=True)
-
-            #print(self.obs)
-            #print(self.Xo)
-
-            print(time.time())
 
             self.model_u = GPy.models.GPRegression(self.Xo, self.obs[:, 1][:, None], k.copy())
             self.model_v = GPy.models.GPRegression(self.Xo, self.obs[:, 0][:, None], k.copy())
 
-            print(time.time())
-
-            self.model_u.optimize_restarts(num_restarts=3, verbose=True)
-            self.model_v.optimize_restarts(num_restarts=3, verbose=True)
-
-            print(time.time())
+            self.model_u.optimize_restarts(num_restarts=3)
+            self.model_v.optimize_restarts(num_restarts=3)
 
             Ur, Ku = self.model_u.predict(self.grid_points)  # Kr = posterior covariance
             Vr, Kv = self.model_v.predict(self.grid_points)
-
-            print(time.time())
 
             # Reshape the output velocity component matrices to be the same size and shape as
             # the inital matrices of x, y points
@@ -142,9 +132,6 @@ class Regression:
 
         else:
             self.format_obs()
-
-            #print(self.obs)
-            #print(self.Xo)
 
             k = kernel
 
@@ -233,6 +220,65 @@ class Regression:
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
         plot.set_title('GPR Velocity Field (30 samples)', size=self.text_size)
+
+        if show:
+            pl.show()
+
+    def plot_curl(self, show=True):
+
+        init_curl = svf.SpiralVectorField.get_curl(self.u, self.v)
+        reg_curl = svf.SpiralVectorField.get_curl(self.ur, self.vr)
+
+        plot_extent = [self.x.min(), self.x.max(), self.y.min(), self.y.max()]
+
+        fig8 = pl.figure(figsize=(self.figW, self.figH))
+
+        plot = fig8.add_subplot(1, 2, 1, aspect='equal')
+        im1 = plot.imshow(init_curl, vmin=0, vmax=2, origin='center', extent=plot_extent,
+                          cmap='jet')
+        #plot.plot(self.Xo[:, self.dim - 1], self.Xo[:, self.dim - 2], 'or', markersize=self.marker_size)
+        plot.set_title("GPR Abs. Error U", size=self.text_size)
+        plot.set_xlim(-5, 5)
+        plot.set_ylim(-5, 5)
+        fig8.colorbar(im1, fraction=0.046, pad=0.04)
+
+        plot = fig8.add_subplot(1, 2, 2, aspect='equal')
+        im2 = plot.imshow(reg_curl, vmin=0, vmax=2, origin='center', extent=plot_extent,
+                          cmap='jet')
+        #plot.plot(self.Xo[:, self.dim - 1], self.Xo[:, self.dim - 2], 'or', markersize=self.marker_size)
+        plot.set_title("GPR Abs. Error V", size=self.text_size)
+        plot.set_xlim(-5, 5)
+        plot.set_ylim(-5, 5)
+        fig8.colorbar(im2, fraction=0.046, pad=0.04)
+
+        if show:
+            pl.show()
+
+    def plot_div(self, show=True):
+        init_div = svf.SpiralVectorField.get_divergence(self.u, self.v)
+        reg_div = svf.SpiralVectorField.get_divergence(self.ur, self.vr)
+
+        plot_extent = [self.x.min(), self.x.max(), self.y.min(), self.y.max()]
+
+        fig8 = pl.figure(figsize=(self.figW, self.figH))
+
+        plot = fig8.add_subplot(1, 2, 1, aspect='equal')
+        im1 = plot.imshow(init_div, vmin=-0.5, vmax=0.5, origin='center', extent=plot_extent,
+                          cmap='jet')
+        # plot.plot(self.Xo[:, self.dim - 1], self.Xo[:, self.dim - 2], 'or', markersize=self.marker_size)
+        plot.set_title("Initial Divergence", size=self.text_size)
+        plot.set_xlim(-5, 5)
+        plot.set_ylim(-5, 5)
+        fig8.colorbar(im1, fraction=0.046, pad=0.04)
+
+        plot = fig8.add_subplot(1, 2, 2, aspect='equal')
+        im2 = plot.imshow(reg_div, vmin=-0.5, vmax=0.5, origin='center', extent=plot_extent,
+                          cmap='jet')
+        # plot.plot(self.Xo[:, self.dim - 1], self.Xo[:, self.dim - 2], 'or', markersize=self.marker_size)
+        plot.set_title("GPR Model Divergence", size=self.text_size)
+        plot.set_xlim(-5, 5)
+        plot.set_ylim(-5, 5)
+        fig8.colorbar(im2, fraction=0.046, pad=0.04)
 
         if show:
             pl.show()
@@ -352,7 +398,13 @@ class Regression:
 
     def plot_errors(self):
 
+        print("plotting")
+
         self.plot_quiver(show=False)
+
+        self.plot_curl(show=False)
+
+        self.plot_div(show=False)
 
         self.plot_raw_error(show=False)
 
@@ -432,14 +484,10 @@ if __name__ == "__main__":
     regression = Regression()
 
     pattern = Pattern.grid
-    print(time.time())
-    trajectory = Trajectory(nsamples=80, integration_time=30, n_timesteps=15, pattern=pattern)
-    print(time.time())
-    #regression.initialize_samples(nsamples=150, trajectory=trajectory)
-    regression.initialize_samples(nsamples=250, random=False)
-    print(time.time())
+    trajectory = Trajectory(nsamples=50, integration_time=30, n_timesteps=15, pattern=pattern)
+    regression.initialize_samples(nsamples=10, trajectory=trajectory)
+    #regression.initialize_samples(nsamples=50, random=False)
     regression.run_model()
-    print(time.time())
 
     # TIMESERIES REGRESSION TESTS
 
@@ -454,4 +502,4 @@ if __name__ == "__main__":
     # regression.run_model()
     # print(time.time())
     #
-    # regression.plot_errors()
+    regression.plot_errors()

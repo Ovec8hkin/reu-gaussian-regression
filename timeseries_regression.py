@@ -53,7 +53,7 @@ class TimeseriesRegression:
         self.scale = 5
 
     def generate_vector_field(self):
-        field = svf.generate_spiral()
+        field = svf.SpiralVectorField().generate_spiral()
         self.x = field[0]
         self.y = field[1]
         self.u = field[3]
@@ -86,6 +86,10 @@ class TimeseriesRegression:
 
             inter = self.trajectory.get_intermediates()
             vels = np.apply_along_axis(vel.get_velocity, 1, inter)
+
+            gaussian_variance = np.random.normal(0, 0.01, size=vels.shape)
+            vels = vels + gaussian_variance
+
             times = self.trajectory.get_times()
 
             self.obs = np.concatenate([times[:, 0][:, None], vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
@@ -103,6 +107,9 @@ class TimeseriesRegression:
             grid_pos = init.initialize_particles_grid()
 
         vels = np.apply_along_axis(vel.get_velocity, 1, grid_pos[:, 0:2])
+
+        gaussian_variance = np.random.normal(0, 0.01, size=vels.shape)
+        vels = vels + gaussian_variance
 
         self.obs = np.concatenate([times[:, 0][:, None], vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
         self.Xo = np.concatenate([times[:, 0][:, None], grid_pos[:, 1][:, None], grid_pos[:, 0][:, None]], axis=1)
@@ -423,9 +430,9 @@ if __name__ == "__main__":
 
     kernel = div_k + curl_k
 
-    trajectory = Trajectory(nsamples=30, integration_time=30, n_timesteps=15, pattern=Pattern.random)
-    regression.initialize_samples(nsamples=150)
-    regression.initialize_samples(nsamples=150, trajectory=trajectory)
-    regression.run_model(kernel=kernel)
+    trajectory = Trajectory(nsamples=50, integration_time=30, n_timesteps=15, pattern=Pattern.random)
+    #regression.initialize_samples(nsamples=150)
+    regression.initialize_samples(nsamples=30, trajectory=trajectory)
+    regression.run_model()
 
     regression.plot_errors()
