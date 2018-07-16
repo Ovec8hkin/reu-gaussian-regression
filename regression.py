@@ -237,7 +237,7 @@ class Regression:
         im1 = plot.imshow(init_curl, vmin=0, vmax=2, origin='center', extent=plot_extent,
                           cmap='jet')
         #plot.plot(self.Xo[:, self.dim - 1], self.Xo[:, self.dim - 2], 'or', markersize=self.marker_size)
-        plot.set_title("GPR Abs. Error U", size=self.text_size)
+        plot.set_title("Initial Curl", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
         fig8.colorbar(im1, fraction=0.046, pad=0.04)
@@ -246,7 +246,7 @@ class Regression:
         im2 = plot.imshow(reg_curl, vmin=0, vmax=2, origin='center', extent=plot_extent,
                           cmap='jet')
         #plot.plot(self.Xo[:, self.dim - 1], self.Xo[:, self.dim - 2], 'or', markersize=self.marker_size)
-        plot.set_title("GPR Abs. Error V", size=self.text_size)
+        plot.set_title("GPR Model Curl", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
         fig8.colorbar(im2, fraction=0.046, pad=0.04)
@@ -382,7 +382,7 @@ class Regression:
         plot.set_title("GPR Ku (Standard Deviation)", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
-        fig3.colorbar(im5, fraction=0.046, pad=0.04)
+        fig3.colorbar(im6, fraction=0.046, pad=0.04)
 
         plot = fig3.add_subplot(1, 3, 3, aspect='equal')
         im7 = plot.imshow(np.sqrt(np.divide(np.add(np.power(raw_ku, 2), np.power(raw_kv, 2)), 2)), vmin=0, vmax=0.5,
@@ -391,14 +391,12 @@ class Regression:
         plot.set_title("GPR Ku (Standard Deviation)", size=self.text_size)
         plot.set_xlim(-5, 5)
         plot.set_ylim(-5, 5)
-        fig3.colorbar(im5, fraction=0.046, pad=0.04)
+        fig3.colorbar(im7, fraction=0.046, pad=0.04)
 
         if show:
             pl.show()
 
     def plot_errors(self):
-
-        print("plotting")
 
         self.plot_quiver(show=False)
 
