@@ -430,9 +430,11 @@ if __name__ == "__main__":
 
     kernel = div_k + curl_k
 
-    trajectory = Trajectory(nsamples=50, integration_time=30, n_timesteps=15, pattern=Pattern.random)
+    trajectory = Trajectory(nsamples=10, integration_time=30, n_timesteps=15, pattern=Pattern.random)
     #regression.initialize_samples(nsamples=150)
     regression.initialize_samples(nsamples=30, trajectory=trajectory)
     regression.run_model()
 
-    regression.plot_errors()
+    print(regression.model_u.Gaussian_noise.variance)
+
+    #regression.plot_errors()
