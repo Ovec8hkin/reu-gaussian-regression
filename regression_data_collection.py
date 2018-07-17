@@ -6,7 +6,7 @@ from trajectories.Trajectory import Pattern
 
 def main():
 
-    drifters = np.arange(30, 330, 30)
+    drifters = np.arange(30, 180, 30)
 
     ux_lengthscales = []
     uy_lengthscales = []
@@ -24,7 +24,7 @@ def main():
 
         regression = TimeseriesRegression()
 
-        trajectory = Trajectory(nsamples=d, integration_time=3600, n_timesteps=48, pattern=Pattern.grid)
+        trajectory = Trajectory(nsamples=d, integration_time=360, n_timesteps=48, pattern=Pattern.grid)
 
         regression.initialize_samples(d, trajectory=trajectory)
         regression.run_model()
@@ -55,7 +55,7 @@ def main():
         np.savetxt('v_t_lscale.csv', vt_lengthscales, delimiter=",")
         np.savetxt('v_gaussian_noise.csv', vgaussian_noise, delimiter=",")
 
-        if d in [30, 150, 300]:
+        if d in [30, 90, 150]:
 
             trajectory.save_parameters_to_file(str(d)+"_trajectory_info.csv")
 
