@@ -16,6 +16,8 @@ class TimeseriesRegression:
 
         self.dim = 3
 
+        self.nsamples = 0
+
         self.x = np.empty(shape=(1, 1))
         self.y = np.empty(shape=(1, 1))
         self.t = np.empty(shape=(1, 1))
@@ -80,6 +82,8 @@ class TimeseriesRegression:
 
         if trajectory is not None:
 
+            self.nsamples = trajectory.n_particles
+
             self.trajectory = trajectory
 
             self.trajectory.lagtransport()
@@ -98,6 +102,7 @@ class TimeseriesRegression:
             return
 
         times = np.ones(shape=self.obs.shape)
+        self.nsamples = nsamples
 
         if random:
             init = Initializations(np.zeros(shape=(nsamples, self.dim)), nsamples)
@@ -114,7 +119,22 @@ class TimeseriesRegression:
         self.obs = np.concatenate([times[:, 0][:, None], vels[:, 1][:, None], vels[:, 0][:, None]], axis=1)
         self.Xo = np.concatenate([times[:, 0][:, None], grid_pos[:, 1][:, None], grid_pos[:, 0][:, None]], axis=1)
 
-    def run_model(self, kernel=None):
+    def run_model(self, kernel=None, step=None):
+
+        np.set_printoptions(threshold=np.nan)
+        print(self.Xo)
+        print(self.obs)
+
+        if step is not None:
+
+            min = (step-1)*self.nsamples
+            max = min+self.nsamples
+
+            self.Xo = self.Xo[min:max, :]
+            self.obs = self.obs[min:max, :]
+
+            self.Xo[:, 0] = np.ones(shape=self.Xo[:, 0].shape)
+            self.obs[:, 0] = np.ones(shape=self.obs[:, 0].shape)
 
         if kernel is None:
 
@@ -424,9 +444,11 @@ if __name__ == "__main__":
 
     kernel = div_k + curl_k
 
-    trajectory = Trajectory(nsamples=10, integration_time=30, n_timesteps=15, pattern=Pattern.random)
+    trajectory = Trajectory(nsamples=250, integration_time=30, n_timesteps=15, pattern=Pattern.grid)
     #regression.initialize_samples(nsamples=150)
     regression.initialize_samples(nsamples=30, trajectory=trajectory)
     regression.run_model()
 
-    #regression.plot_errors()
+    #print(regression.model_u.kern.lengthscale[2])
+
+    regression.plot_errors()
