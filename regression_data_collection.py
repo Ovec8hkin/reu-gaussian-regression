@@ -28,9 +28,9 @@ def main():
 
         lengthscales = model.kern.lengthscale
 
-        x_lengthscales.append(lengthscales[2][0])
-        y_lengthscales.append(lengthscales[1][0])
-        t_lengthscales.append(lengthscales[0][0])
+        x_lengthscales.append(lengthscales[2])
+        y_lengthscales.append(lengthscales[1])
+        t_lengthscales.append(lengthscales[0])
         gaussian_noise.append(model.Gaussian_noise.variance[0])
 
         np.savetxt('x_lscale.csv', x_lengthscales, delimiter=",")
