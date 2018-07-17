@@ -120,6 +120,25 @@ class Trajectory:
     def get_params(self):
         return self.initial, self.positions, self.intermediates
 
+    def save_parameters_to_file(self, file):
+
+        params_array = [self.n_particles, self.integration_time, self.n_timesteps, self.density, self.pattern.value]
+
+        np.savetxt(file, params_array, delimiter=",")
+
+    @classmethod
+    def create_from_file(cls, file):
+
+        params_array = np.loadtxt(file, delimiter=",")
+
+        particles = params_array[0]
+        integration_time = params_array[1]
+        timesteps = params_array[2]
+        density = params_array[3]
+        pattern = Pattern(params_array[4])
+
+        return Trajectory(nsamples=particles, integration_time=integration_time, n_timesteps=timesteps, density=density, pattern=pattern)
+
     def save_positions_to_file(self):
         np.savetxt("/Users/joshua/Desktop/trajectory_data.csv", self.intermediates, fmt='%.6e', delimiter=',')
 
