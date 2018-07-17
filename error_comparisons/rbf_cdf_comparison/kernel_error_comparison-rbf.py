@@ -9,7 +9,7 @@ def run_models(samples):
     trajectory = Trajectory(nsamples=samples, integration_time=30, n_timesteps=15, pattern=Pattern.grid)
 
     regression = reg.Regression(dim=3)
-    regression.initialize_samples(nsamples=samples, trajectory=trajectory)
+    regression.initialize_samples(ndrifters=samples, trajectory=trajectory)
 
     regression.run_model()
 

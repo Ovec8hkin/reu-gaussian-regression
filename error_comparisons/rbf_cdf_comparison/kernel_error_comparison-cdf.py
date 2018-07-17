@@ -14,7 +14,7 @@ def run_models(samples):
     k = div_k + curl_k
 
     regression = reg.Regression(dim=3)
-    regression.initialize_samples(nsamples=samples, trajectory=trajectory)
+    regression.initialize_samples(ndrifters=samples, trajectory=trajectory)
 
     regression.run_model(kernel=k)
 
