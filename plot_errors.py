@@ -9,10 +9,10 @@ def main(directory, drifters):
     ur_file, vr_file, ku_file, kv_file = None, None, None, None
 
     try:
-        ur_file = directory+str(drifters)+"_drifters_ur.csv"
-        vr_file = directory + str(drifters) + "_drifters_vr.csv"
-        ku_file = directory+str(drifters)+"_drifters_ku.csv"
-        kv_file = directory + str(drifters) + "_drifters_kv.csv"
+        ur_file = directory+str(drifters)+"_samples_ur.csv"
+        vr_file = directory + str(drifters) + "_samples_vr.csv"
+        ku_file = directory+str(drifters)+"_samples_ku.csv"
+        kv_file = directory + str(drifters) + "_samples_kv.csv"
     except Exception as e:
         print("File not found")
 
@@ -24,7 +24,7 @@ def main(directory, drifters):
 
     reg = TimeseriesRegression()
 
-    trajectory = Trajectory(nsamples=drifters, integration_time=3600, n_timesteps=48, pattern=Pattern.grid)
+    trajectory = Trajectory(nsamples=drifters, integration_time=270, n_timesteps=30, pattern=Pattern.grid)
     reg.initialize_samples(trajectory=trajectory)
 
     reg.ur = ur
@@ -37,7 +37,9 @@ def main(directory, drifters):
 
 if __name__ == "__main__":
 
-    main("/Users/joshua/Desktop/gpr-drifters/model_output/", 300)
+    main("/Users/joshua/Desktop/", 30)
+    main("/Users/joshua/Desktop/", 90)
+    main("/Users/joshua/Desktop/", 150)
 
     # main(
     #     ur_file="/Users/joshua/Desktop/gpr-drifters/ur_save.csv",

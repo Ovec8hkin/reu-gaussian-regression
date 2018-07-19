@@ -19,6 +19,8 @@ class TimeseriesRegression(Regression):
 
         self.T = np.empty(shape=(1, 1), dtype=np.float64)
 
+        self.create_and_shape_grid()
+
     def create_and_shape_grid(self):
         self.X, self.Y = np.meshgrid(self.x, self.y)
         self.T = np.ones(self.Y.size)
@@ -36,13 +38,8 @@ class TimeseriesRegression(Regression):
 
         if trajectory:
             times = self.trajectory.get_times()
-
-            self.obs = np.concatenate([times[:, 0][:, None], self.obs], axis=1)
-            self.Xo = np.concatenate([times[:, 0][:, None], self.Xo], axis=1)
-
-            return
-
-        times = np.ones(shape=self.obs.shape)
+        else:
+            times = np.ones(shape=self.obs.shape)
 
         self.obs = np.concatenate([times[:, 0][:, None], self.obs], axis=1)
         self.Xo = np.concatenate([times[:, 0][:, None], self.Xo], axis=1)
@@ -171,9 +168,16 @@ if __name__ == "__main__":
 
     kernel = div_k + curl_k
 
-    trajectory = Trajectory(nsamples=20, integration_time=30, n_timesteps=15, pattern=Pattern.grid)
+    trajectory = Trajectory(nsamples=90, integration_time=360, n_timesteps=30, pattern=Pattern.grid)
     #regression.initialize_samples(nsamples=150)
     regression.initialize_samples(trajectory=trajectory)
+
+    np.set_printoptions(threshold=np.nan)
+
+    print(regression.Xo)
+    print()
+    print(regression.obs)
+
     regression.run_model()
 
     #print(regression.model_u.kern.lengthscale[2])
