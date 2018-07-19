@@ -217,7 +217,9 @@ class Regression:
         plot.streamplot(self.x, self.y, self.u, self.v)
         plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'og', markersize=self.marker_size)
         plot.set_xlim(-5, 5)
+        plot.set_xlabel("km")
         plot.set_ylim(-5, 5)
+        plot.set_ylabel("km")
         plot.set_title('Original Velocity Field ('+str(self.n_drifters)+' drifters)', size=self.text_size, pad=self.title_pad)
         plot.tick_params(labelsize=self.tick_label_size)
 
@@ -227,7 +229,9 @@ class Regression:
         plot.streamplot(self.x, self.y, self.ur, self.vr)
         plot.plot(self.Xo[:, self.dim-1], self.Xo[:, self.dim-2], 'og', markersize=self.marker_size)
         plot.set_xlim(-5, 5)
+        plot.set_xlabel("km")
         plot.set_ylim(-5, 5)
+        plot.set_ylabel("km")
         plot.set_title('GPR Velocity Field ('+str(self.n_drifters)+' drifters)', size=self.text_size, pad=self.title_pad)
         plot.tick_params(labelsize=self.tick_label_size)
 

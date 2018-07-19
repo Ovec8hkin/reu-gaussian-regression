@@ -19,27 +19,29 @@ def main(directory, drifters):
     ur = np.loadtxt(ur_file, delimiter=",") if ur_file is not None else None
     vr = np.loadtxt(vr_file, delimiter=",") if vr_file is not None else None
 
-    #ku = np.loadtxt(ku_file, delimiter=",") if ku_file is not None else None
-    #kv = np.loadtxt(kv_file, delimiter=",") if kv_file is not None else None
+    ku = np.loadtxt(ku_file, delimiter=",") if ku_file is not None else None
+    kv = np.loadtxt(kv_file, delimiter=",") if kv_file is not None else None
 
     reg = TimeseriesRegression()
 
-    trajectory = Trajectory(nsamples=drifters, integration_time=270, n_timesteps=30, pattern=Pattern.grid)
+    trajectory = Trajectory(nsamples=drifters, integration_time=360, n_timesteps=30, pattern=Pattern.grid)
     reg.initialize_samples(trajectory=trajectory)
 
     reg.ur = ur
     reg.vr = vr
-    #reg.ku = ku
-    #reg.kv = kv
+    reg.ku = ku
+    reg.kv = kv
 
     reg.plot_errors()
 
 
 if __name__ == "__main__":
 
-    main("/Users/joshua/Desktop/", 30)
-    main("/Users/joshua/Desktop/", 90)
-    main("/Users/joshua/Desktop/", 150)
+    main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-4/", 30)
+    main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-4/", 90)
+    main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-4/", 180)
+    main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-4/", 240)
+    main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-4/", 300)
 
     # main(
     #     ur_file="/Users/joshua/Desktop/gpr-drifters/ur_save.csv",
