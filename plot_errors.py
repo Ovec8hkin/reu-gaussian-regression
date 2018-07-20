@@ -32,7 +32,7 @@ def main(directory, drifters):
     #reg.ku = ku
     #reg.kv = kv
 
-    reg.plot_errors()
+    reg.plot_errors(save=True)
 
 
 if __name__ == "__main__":

@@ -193,10 +193,10 @@ class TimeseriesRegression(Regression):
         gpr_title = 'GPR Velocity Field (' + str(self.n_drifters) + ' drifters)'
         setup_plot(plot2, self.x, self.y, ur, vr, xo, gpr_title)
 
-        pl.subplots_adjust(left=0.05, bottom=0.32, right=0.95, top=0.88, wspace=0.06, hspace=0.15)
+        pl.subplots_adjust(left=0.05, bottom=0.20, right=0.95, top=0.88, wspace=0.06, hspace=0.15)
 
         slider_color = 'lightgoldenrodyellow'
-        slider_ax = pl.axes([0.05, 0.15, 0.85, 0.05], facecolor=slider_color)
+        slider_ax = pl.axes([0.05, 0.05, 0.85, 0.05], facecolor=slider_color)
 
         slider = Slider(slider_ax, 'Freq', 0, self.trajectory.n_timesteps, valinit=0, valstep=1)
 
@@ -220,6 +220,12 @@ class TimeseriesRegression(Regression):
         if show:
             pl.show()
 
+        if save:
+            extent1 = plot1.get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
+            fig1.savefig('orig_quiver.png', dpi=300, bbox_inches=extent1.expanded(1.2, 1.26))
+            extent2 = plot2.get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
+            fig1.savefig('reg_quiver.png', dpi=300, bbox_inches=extent2.expanded(1.2, 1.26))
+
     def plot_curl(self, show=True, save=False):
 
         def plot_curl(plot, curl, title):
@@ -228,6 +234,8 @@ class TimeseriesRegression(Regression):
             plot.set_xlim(-5, 5)
             plot.set_ylim(-5, 5)
             plot.tick_params(labelsize=self.tick_label_size)
+            plot.set_xticks([-5, 0, 5])
+            plot.set_yticks([-5, 0, 5])
             return im
 
         n = 0
@@ -255,10 +263,10 @@ class TimeseriesRegression(Regression):
         error_title = "Curl Error"
         error_im = plot_curl(error_plot, c_diff, error_title)
 
-        cbar = pl.colorbar(orig_im, fraction=0.046, pad=0.04, ax=orig_curl_plot)
-        cbar.ax.tick_params(labelsize=self.cbar_label_size)
-        cbar = pl.colorbar(gpr_im, fraction=0.046, pad=0.04, ax=gpr_curl_plot)
-        cbar.ax.tick_params(labelsize=self.cbar_label_size)
+        # cbar = pl.colorbar(orig_im, fraction=0.046, pad=0.04, ax=orig_curl_plot)
+        # cbar.ax.tick_params(labelsize=self.cbar_label_size)
+        # cbar = pl.colorbar(gpr_im, fraction=0.046, pad=0.04, ax=gpr_curl_plot)
+        # cbar.ax.tick_params(labelsize=self.cbar_label_size)
         cbar = pl.colorbar(error_im, fraction=0.046, pad=0.04, ax=error_plot)
         cbar.ax.tick_params(labelsize=self.cbar_label_size)
 
@@ -287,10 +295,18 @@ class TimeseriesRegression(Regression):
 
         slider.on_changed(update)
 
-        pl.subplots_adjust(left=0.06, bottom=0.47, right=0.94, top=0.88, wspace=0.48, hspace=0.0)
+        pl.subplots_adjust(left=0.03, bottom=0.43, right=0.93, top=0.88, wspace=0.01, hspace=0.0)
 
         if show:
             pl.show()
+
+        if save:
+            extent1 = orig_curl_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('orig_curl.png', dpi=300, bbox_inches=extent1.expanded(1.32, 1.33))
+            extent2 = gpr_curl_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('reg_curl.png', dpi=300, bbox_inches=extent2.expanded(1.32, 1.33))
+            extent3 = error_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('error_curl.png', dpi=300, bbox_inches=extent3.expanded(1.6, 1.33))
             
     def plot_div(self, show=True, save=False):
         
@@ -299,6 +315,8 @@ class TimeseriesRegression(Regression):
             plot.set_title(title, size=self.text_size, pad=self.title_pad)
             plot.set_xlim(-5, 5)
             plot.set_ylim(-5, 5)
+            plot.set_xticks([-5, 0, 5])
+            plot.set_yticks([-5, 0, 5])
             plot.tick_params(labelsize=self.tick_label_size)
             return im
 
@@ -327,10 +345,10 @@ class TimeseriesRegression(Regression):
         error_title = "Divergence Error"
         error_im = plot_div(error_plot, diff, error_title)
 
-        cbar = pl.colorbar(orig_im, fraction=0.046, pad=0.04, ax=orig_div_plot)
-        cbar.ax.tick_params(labelsize=self.cbar_label_size)
-        cbar = pl.colorbar(gpr_im, fraction=0.046, pad=0.04, ax=gpr_div_plot)
-        cbar.ax.tick_params(labelsize=self.cbar_label_size)
+        # cbar = pl.colorbar(orig_im, fraction=0.046, pad=0.04, ax=orig_div_plot)
+        # cbar.ax.tick_params(labelsize=self.cbar_label_size)
+        # cbar = pl.colorbar(gpr_im, fraction=0.046, pad=0.04, ax=gpr_div_plot)
+        # cbar.ax.tick_params(labelsize=self.cbar_label_size)
         cbar = pl.colorbar(error_im, fraction=0.046, pad=0.04, ax=error_plot)
         cbar.ax.tick_params(labelsize=self.cbar_label_size)
 
@@ -359,10 +377,18 @@ class TimeseriesRegression(Regression):
 
         slider.on_changed(update)
 
-        pl.subplots_adjust(left=0.06, bottom=0.47, right=0.94, top=0.88, wspace=0.48, hspace=0.0)
+        pl.subplots_adjust(left=0.03, bottom=0.43, right=0.93, top=0.88, wspace=0.01, hspace=0.0)
 
         if show:
             pl.show()
+
+        if save:
+            extent1 = orig_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('orig_div.png', dpi=300, bbox_inches=extent1.expanded(1.32, 1.33))
+            extent2 = gpr_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('reg_div.png', dpi=300, bbox_inches=extent2.expanded(1.32, 1.33))
+            extent3 = error_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('error_div.png', dpi=300, bbox_inches=extent3.expanded(1.6, 1.33))
 
     def plot_raw_error(self, show=True, save=False):
 
@@ -371,6 +397,8 @@ class TimeseriesRegression(Regression):
             plot.set_title(title, size=self.text_size, pad=self.title_pad)
             plot.set_xlim(-5, 5)
             plot.set_ylim(-5, 5)
+            plot.set_xticks([-5, 0, 5])
+            plot.set_yticks([-5, 0, 5])
             plot.tick_params(labelsize=self.tick_label_size)
             return im
 
@@ -399,10 +427,10 @@ class TimeseriesRegression(Regression):
         error_title = "GPR Raw Error U+V"
         error_im = plot_error(error_plot, ea, error_title)
 
-        cbar = pl.colorbar(orig_im, fraction=0.046, pad=0.04, ax=orig_div_plot)
-        cbar.ax.tick_params(labelsize=self.cbar_label_size)
-        cbar = pl.colorbar(gpr_im, fraction=0.046, pad=0.04, ax=gpr_div_plot)
-        cbar.ax.tick_params(labelsize=self.cbar_label_size)
+        # cbar = pl.colorbar(orig_im, fraction=0.046, pad=0.04, ax=orig_div_plot)
+        # cbar.ax.tick_params(labelsize=self.cbar_label_size)
+        # cbar = pl.colorbar(gpr_im, fraction=0.046, pad=0.04, ax=gpr_div_plot)
+        # cbar.ax.tick_params(labelsize=self.cbar_label_size)
         cbar = pl.colorbar(error_im, fraction=0.046, pad=0.04, ax=error_plot)
         cbar.ax.tick_params(labelsize=self.cbar_label_size)
 
@@ -431,10 +459,18 @@ class TimeseriesRegression(Regression):
 
         slider.on_changed(update)
 
-        pl.subplots_adjust(left=0.06, bottom=0.47, right=0.94, top=0.88, wspace=0.48, hspace=0.0)
+        pl.subplots_adjust(left=0.03, bottom=0.43, right=0.93, top=0.88, wspace=0.01, hspace=0.0)
 
         if show:
             pl.show()
+
+        if save:
+            extent1 = orig_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('abs_err_u.png', dpi=300, bbox_inches=extent1.expanded(1.32, 1.33))
+            extent2 = gpr_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('abs_err_v.png', dpi=300, bbox_inches=extent2.expanded(1.32, 1.33))
+            extent3 = error_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('abs_err_uv.png', dpi=300, bbox_inches=extent3.expanded(1.6, 1.33))
 
     def plot_relative_error(self, show=True, save=False):
 
@@ -443,6 +479,8 @@ class TimeseriesRegression(Regression):
             plot.set_title(title, size=self.text_size, pad=self.title_pad)
             plot.set_xlim(-5, 5)
             plot.set_ylim(-5, 5)
+            plot.set_xticks([-5, 0, 5])
+            plot.set_yticks([-5, 0, 5])
             plot.tick_params(labelsize=self.tick_label_size)
             return im
 
@@ -471,10 +509,10 @@ class TimeseriesRegression(Regression):
         error_title = "GPR Relative Error U+V"
         error_im = plot_error(error_plot, ea, error_title)
 
-        cbar = pl.colorbar(orig_im, fraction=0.046, pad=0.04, ax=orig_div_plot)
-        cbar.ax.tick_params(labelsize=self.cbar_label_size)
-        cbar = pl.colorbar(gpr_im, fraction=0.046, pad=0.04, ax=gpr_div_plot)
-        cbar.ax.tick_params(labelsize=self.cbar_label_size)
+        # cbar = pl.colorbar(orig_im, fraction=0.046, pad=0.04, ax=orig_div_plot)
+        # cbar.ax.tick_params(labelsize=self.cbar_label_size)
+        # cbar = pl.colorbar(gpr_im, fraction=0.046, pad=0.04, ax=gpr_div_plot)
+        # cbar.ax.tick_params(labelsize=self.cbar_label_size)
         cbar = pl.colorbar(error_im, fraction=0.046, pad=0.04, ax=error_plot)
         cbar.ax.tick_params(labelsize=self.cbar_label_size)
 
@@ -503,10 +541,18 @@ class TimeseriesRegression(Regression):
 
         slider.on_changed(update)
 
-        pl.subplots_adjust(left=0.06, bottom=0.47, right=0.94, top=0.88, wspace=0.48, hspace=0.0)
+        pl.subplots_adjust(left=0.03, bottom=0.43, right=0.93, top=0.88, wspace=0.01, hspace=0.0)
 
         if show:
             pl.show()
+
+        if save:
+            extent1 = orig_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('rel_err_u.png', dpi=300, bbox_inches=extent1.expanded(1.32, 1.33))
+            extent2 = gpr_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('rel_err_v.png', dpi=300, bbox_inches=extent2.expanded(1.32, 1.33))
+            extent3 = error_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
+            fig8.savefig('rel_err_uv.png', dpi=300, bbox_inches=extent3.expanded(1.6, 1.33))
 
     def plot_errors(self, save=False):
 
