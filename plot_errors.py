@@ -11,16 +11,11 @@ def main(directory, drifters):
     try:
         ur_file = directory+str(drifters)+"_samples_ur.csv.npy"
         vr_file = directory + str(drifters) + "_samples_vr.csv.npy"
-        #ku_file = directory+str(drifters)+"_samples_ku.csv"
-        #kv_file = directory + str(drifters) + "_samples_kv.csv"
     except Exception as e:
         print("File not found")
 
     ur = np.load(ur_file) if ur_file is not None else None
     vr = np.load(vr_file) if vr_file is not None else None
-
-    #ku = np.loadtxt(ku_file, delimiter=",") if ku_file is not None else None
-    #kv = np.loadtxt(kv_file, delimiter=",") if kv_file is not None else None
 
     reg = TimeseriesRegression()
 
@@ -29,10 +24,8 @@ def main(directory, drifters):
 
     reg.ur = ur
     reg.vr = vr
-    #reg.ku = ku
-    #reg.kv = kv
 
-    reg.plot_errors(save=True)
+    reg.plot_quiver()
 
 
 if __name__ == "__main__":

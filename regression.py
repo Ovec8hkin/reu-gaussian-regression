@@ -36,9 +36,6 @@ class Regression:
         self.ku = np.empty(shape=(1, 1))
         self.kv = np.empty(shape=(1, 1))
 
-        self.generate_vector_field()
-        self.create_and_shape_grid()
-
         self.model_u = None
         self.model_v = None
         self.trajectory = None
@@ -116,6 +113,9 @@ class Regression:
         self.Xo = np.concatenate([grid_pos[:, 1][:, None], grid_pos[:, 0][:, None]], axis=1)
 
     def run_model(self, kernel=None):
+
+        self.generate_vector_field()
+        self.create_and_shape_grid()
 
         if kernel is None:
 
