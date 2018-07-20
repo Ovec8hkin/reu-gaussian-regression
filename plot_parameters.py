@@ -4,14 +4,14 @@ import matplotlib.pylab as pl
 def main(directory, x):
 
     try:
-        ux_lscale = directory+"/u_x_lscale.csv"
-        uy_lscale = directory+"/u_y_lscale.csv"
-        ut_lscale = directory+"/u_t_lscale.csv"
-        u_noise = directory+"/u_gaussian_noise.csv"
-        vx_lscale = directory+"/v_x_lscale.csv"
-        vy_lscale = directory+"/v_y_lscale.csv"
-        vt_lscale = directory+"/v_t_lscale.csv"
-        v_noise = directory+"/u_gaussian_noise.csv"
+        ux_lscale = directory+"u_x_lscale.csv"
+        uy_lscale = directory+"u_y_lscale.csv"
+        ut_lscale = directory+"u_t_lscale.csv"
+        u_noise = directory+"u_gaussian_noise.csv"
+        vx_lscale = directory+"v_x_lscale.csv"
+        vy_lscale = directory+"v_y_lscale.csv"
+        vt_lscale = directory+"v_t_lscale.csv"
+        v_noise = directory+"u_gaussian_noise.csv"
     except Exception:
         print("Not found")
 
@@ -71,7 +71,7 @@ def main(directory, x):
 
 if __name__ == "__main__":
 
-    main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-2/", np.arange(30, 180, 30))
+    main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-4/", np.arange(30, 300, 30))
     #main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-2/u_x_lscale.csv", "X Lengthscale", np.arange(30, 180, 30))
     #main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-2/u_y_lscale.csv", "Y Lengthscale", np.arange(30, 180, 30))
     #main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-2/u_t_lscale.csv", "T Lengthscale", np.arange(30, 180, 30))
