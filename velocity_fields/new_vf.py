@@ -14,9 +14,9 @@ class NewVectorField:
         
         u = file.variables['uvel'][:]
         v = file.variables['vvel'][:]
-        y = file.variables['lat'][:]
-        x = file.variables['lon'][:]
-        t = file.variables['time'][:] * 86400
+        y = file.variables['lat'][:] / 1000
+        x = file.variables['lon'][:] / 1000
+        t = file.variables['time'][:] * 24
 
         print(x)
 
