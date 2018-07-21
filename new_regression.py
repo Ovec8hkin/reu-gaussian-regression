@@ -102,25 +102,25 @@ class NewRegression(TimeseriesRegression):
 
         grid_points = self.chunk_grid(tstep)
 
-        print(grid_points)
-        print(grid_points.shape)
+        #print(grid_points)
+        #print(grid_points.shape)
 
         Ur, Ku = self.model_u.predict(grid_points)
         Vr, Kv = self.model_v.predict(grid_points)
 
-        self.ur = np.reshape(Ur, [46, self.x.size])
-        self.vr = np.reshape(Vr, [46, self.x.size])
+        self.ur = np.reshape(Ur, [self.y.size, self.x.size])
+        self.vr = np.reshape(Vr, [self.y.size, self.x.size])
 
         out_name = "/Users/joshua/Desktop/gpr-drifters/model_output/velocity_mat_data/velocities_"+str(tstep)+".mat"
         sio.savemat(out_name, {"ur": self.ur, "vr": self.vr})
 
     def chunk_grid(self, tstep):
 
-        min = tstep*self.x.size*46
-        max = (tstep+1)*self.x.size*46
+        min = tstep*self.x.size*self.y.size
+        max = (tstep+1)*self.x.size*self.y.size
 
-        print(min)
-        print(max)
+        #print(min)
+        #print(max)
 
         grid_points = self.grid_points[min:max]
 
@@ -198,11 +198,14 @@ class NewRegression(TimeseriesRegression):
 
 if __name__ == "__main__":
 
+    step = sys.argv[1:]
+
     regression = NewRegression()
     regression.initialize_samples_from_file(15)
-    for i in range(0, 47, 1):
-        print("Step {} of {}", i, regression.y.size)
-        regression.run_model(step=i)
+    regression.run_model(step=int(step))
+    #for i in range(0, regression.t.size, 1):
+        #print("Step {} of {}".format(i, regression.t.size))
+
 
     #np.save('5_samples_ur', regression.ur)
     #np.save('5_samples_vr', regression.vr)
