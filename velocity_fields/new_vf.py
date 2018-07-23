@@ -18,8 +18,6 @@ class NewVectorField:
         x = file.variables['lon'][:] / 1000
         t = file.variables['time'][:] * 24
 
-        print(x)
-
         return x, y, u, v, t
 
     @classmethod
@@ -31,7 +29,7 @@ class NewVectorField:
         return dvdx - dudy
 
     @classmethod
-    def get_duv(cls, u, v):
+    def get_div(cls, u, v):
         dudy, dudx = np.gradient(u, 0.1, axis=[0, 1])
         dvdy, dvdx = np.gradient(v, 0.1, axis=[0, 1])
 
@@ -103,13 +101,3 @@ if __name__ == "__main__":
     slider.on_changed(update)
 
     pl.show()
-
-
-    #plot.plot(Xo[:, dim - 1], Xo[:, dim - 2], 'og', markersize=marker_size)
-    #plot.set_xlim(-5, 5)
-    #plot.set_xlabel("km")
-    #plot.set_ylim(-5, 5)
-    #plot.set_ylabel("km")
-    #plot.set_title('Original Velocity Field (' + str(n_drifters) + ' drifters)', size=text_size,
-                   #pad=title_pad)
-   # plot.tick_params(labelsize=tick_label_size)
