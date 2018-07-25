@@ -18,7 +18,7 @@ class TimeseriesRegression(Regression):
         self.T = np.empty(shape=(1, 1), dtype=np.float64)
 
     def create_and_shape_grid_3D(self, trajectory):
-        print(self.x.size)
+        self.generate_vector_field()
         self.t = np.linspace(0, trajectory.integration_time, trajectory.n_timesteps)
         self.X, self.T, self.Y = np.meshgrid(self.x, self.t, self.y)
 
@@ -177,6 +177,8 @@ class TimeseriesRegression(Regression):
 
         n = 0
 
+        print(self.u)
+
         ur = self.ur[n, :, :]
         vr = self.vr[n, :, :]
         xo = self.Xo[self.n_drifters*n:self.n_drifters*n+self.n_drifters, :]
@@ -217,14 +219,14 @@ class TimeseriesRegression(Regression):
 
         slider.on_changed(update)
 
+        slider.set_val(0)
+
         if show:
             pl.show()
 
         if save:
-            extent1 = plot1.get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
-            fig1.savefig('orig_quiver.png', dpi=300, bbox_inches=extent1.expanded(1.2, 1.26))
-            extent2 = plot2.get_window_extent().transformed(fig1.dpi_scale_trans.inverted())
-            fig1.savefig('reg_quiver.png', dpi=300, bbox_inches=extent2.expanded(1.2, 1.26))
+            slider_ax.set_axis_off()
+            fig1.savefig('quiver.png', dpi=300)
 
     def plot_curl(self, show=True, save=False):
 
@@ -301,12 +303,8 @@ class TimeseriesRegression(Regression):
             pl.show()
 
         if save:
-            extent1 = orig_curl_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('orig_curl.png', dpi=300, bbox_inches=extent1.expanded(1.32, 1.33))
-            extent2 = gpr_curl_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('reg_curl.png', dpi=300, bbox_inches=extent2.expanded(1.32, 1.33))
-            extent3 = error_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('error_curl.png', dpi=300, bbox_inches=extent3.expanded(1.6, 1.33))
+            slider_ax.set_axis_off()
+            fig8.savefig('curl.png', dpi=300)
             
     def plot_div(self, show=True, save=False):
         
@@ -383,18 +381,15 @@ class TimeseriesRegression(Regression):
             pl.show()
 
         if save:
-            extent1 = orig_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('orig_div.png', dpi=300, bbox_inches=extent1.expanded(1.32, 1.33))
-            extent2 = gpr_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('reg_div.png', dpi=300, bbox_inches=extent2.expanded(1.32, 1.33))
-            extent3 = error_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('error_div.png', dpi=300, bbox_inches=extent3.expanded(1.6, 1.33))
+            slider_ax.set_axis_off()
+            fig8.savefig('div.png', dpi=300)
 
     def plot_raw_error(self, show=True, save=False):
 
-        def plot_error(plot, error, title):
+        def plot_error(plot, error, xo, title):
             im = plot.imshow(error, vmin=0, vmax=0.5, origin='center', extent=plot_extent, cmap='jet')
             plot.set_title(title, size=self.text_size, pad=self.title_pad)
+            plot.plot(xo[:, 2], xo[:, 1], 'og', markersize=self.marker_size)
             plot.set_xlim(-5, 5)
             plot.set_ylim(-5, 5)
             plot.set_xticks([-5, 0, 5])
@@ -406,6 +401,7 @@ class TimeseriesRegression(Regression):
 
         ur = self.ur[n, :, :]
         vr = self.vr[n, :, :]
+        xo = self.Xo[self.n_drifters * n:self.n_drifters * n + self.n_drifters, :]
 
         error_u = np.absolute(np.subtract(self.u, ur))
         error_v = np.absolute(np.subtract(self.v, vr))
@@ -417,15 +413,15 @@ class TimeseriesRegression(Regression):
 
         orig_div_plot = fig8.add_subplot(1, 3, 1, aspect='equal')
         orig_title = "GPR Raw Error U"
-        orig_im = plot_error(orig_div_plot, error_u, orig_title)
+        orig_im = plot_error(orig_div_plot, error_u, xo, orig_title)
 
         gpr_div_plot = fig8.add_subplot(1, 3, 2, aspect='equal')
         gpr_title = "GPR Raw Error V"
-        gpr_im = plot_error(gpr_div_plot, error_v, gpr_title)
+        gpr_im = plot_error(gpr_div_plot, error_v, xo, gpr_title)
 
         error_plot = fig8.add_subplot(1, 3, 3, aspect='equal')
         error_title = "GPR Raw Error U+V"
-        error_im = plot_error(error_plot, ea, error_title)
+        error_im = plot_error(error_plot, ea, xo, error_title)
 
         # cbar = pl.colorbar(orig_im, fraction=0.046, pad=0.04, ax=orig_div_plot)
         # cbar.ax.tick_params(labelsize=self.cbar_label_size)
@@ -443,19 +439,20 @@ class TimeseriesRegression(Regression):
             n = int(slider.val)
             ur = self.ur[n, :, :]
             vr = self.vr[n, :, :]
+            xo = self.Xo[self.n_drifters * n:self.n_drifters * n + self.n_drifters, :]
 
             error_u = np.absolute(np.subtract(self.u, ur))
             error_v = np.absolute(np.subtract(self.v, vr))
             ea = np.sqrt(np.divide(np.add(np.power(error_u, 2), np.power(error_v, 2)), 2))
 
             orig_div_plot.cla()
-            plot_error(orig_div_plot, error_u, orig_title)
+            plot_error(orig_div_plot, error_u, xo, orig_title)
 
             gpr_div_plot.cla()
-            plot_error(gpr_div_plot, error_v, gpr_title)
+            plot_error(gpr_div_plot, error_v, xo, gpr_title)
 
             error_plot.cla()
-            plot_error(error_plot, ea, error_title)
+            plot_error(error_plot, ea, xo, error_title)
 
         slider.on_changed(update)
 
@@ -465,12 +462,8 @@ class TimeseriesRegression(Regression):
             pl.show()
 
         if save:
-            extent1 = orig_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('abs_err_u.png', dpi=300, bbox_inches=extent1.expanded(1.32, 1.33))
-            extent2 = gpr_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('abs_err_v.png', dpi=300, bbox_inches=extent2.expanded(1.32, 1.33))
-            extent3 = error_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('abs_err_uv.png', dpi=300, bbox_inches=extent3.expanded(1.6, 1.33))
+            slider_ax.set_axis_off()
+            fig8.savefig('abs_error.png', dpi=300)
 
     def plot_relative_error(self, show=True, save=False):
 
@@ -547,12 +540,8 @@ class TimeseriesRegression(Regression):
             pl.show()
 
         if save:
-            extent1 = orig_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('rel_err_u.png', dpi=300, bbox_inches=extent1.expanded(1.32, 1.33))
-            extent2 = gpr_div_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('rel_err_v.png', dpi=300, bbox_inches=extent2.expanded(1.32, 1.33))
-            extent3 = error_plot.get_window_extent().transformed(fig8.dpi_scale_trans.inverted())
-            fig8.savefig('rel_err_uv.png', dpi=300, bbox_inches=extent3.expanded(1.6, 1.33))
+            slider_ax.set_axis_off()
+            fig8.savefig('rel_error.png', dpi=300)
 
     def plot_errors(self, save=False):
 

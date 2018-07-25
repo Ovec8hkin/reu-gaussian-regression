@@ -9,8 +9,8 @@ def main(directory, drifters):
     ur_file, vr_file, ku_file, kv_file = None, None, None, None
 
     try:
-        ur_file = directory+str(drifters)+"_samples_ur.csv.npy"
-        vr_file = directory + str(drifters) + "_samples_vr.csv.npy"
+        ur_file = directory+str(drifters)+"_samples_ur.npy"
+        vr_file = directory + str(drifters) + "_samples_vr.npy"
     except Exception as e:
         print("File not found")
 
@@ -19,18 +19,22 @@ def main(directory, drifters):
 
     reg = TimeseriesRegression()
 
-    trajectory = Trajectory(nsamples=drifters, integration_time=270, n_timesteps=48, pattern=Pattern.grid)
+    trajectory = Trajectory(nsamples=drifters, integration_time=360, n_timesteps=48, pattern=Pattern.grid)
     reg.initialize_samples(trajectory=trajectory)
 
     reg.ur = ur
     reg.vr = vr
 
-    reg.plot_quiver()
+    reg.plot_quiver(show=False, save=True)
+    reg.plot_raw_error(show=False, save=True)
+    reg.plot_curl(show=False, save=True)
+    reg.plot_div(show=False, save=True)
 
 
 if __name__ == "__main__":
-
-    main("/Users/joshua/Desktop/gpr-drifters/model_output/", 60)
+    #main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-4/", 30)
+    #main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-4/", 90)
+    main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-4/", 180)
 
     # main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-4/", 30)
     # main("/Users/joshua/Desktop/gpr-drifters/model_output/spiral-vector-field-test-4/", 90)

@@ -52,11 +52,13 @@ class Regression:
         self.cbar_label_size = 12
 
     def generate_vector_field(self):
-        field = svf.SpiralVectorField().generate_spiral()
+        field = svf.SpiralVectorField.generate_spiral()
         self.x = field[0]
         self.y = field[1]
         self.u = field[3]
         self.v = field[4]
+
+        print(self.u)
 
     def create_and_shape_grid(self):
         self.X, self.Y = np.meshgrid(self.x, self.y)
@@ -84,8 +86,13 @@ class Regression:
 
             self.trajectory.lagtransport()
             inter = self.trajectory.get_intermediates()
+            times = self.trajectory.get_times()
 
-            vels = np.apply_along_axis(self.trajectory.get_velocity, 1, inter)
+            inter_times = np.concatenate([inter, times], axis=1)
+
+            print(inter_times)
+
+            vels = np.apply_along_axis(svf.SpiralVectorField.get_velocity, 1, inter_times)
 
             gaussian_variance = np.random.normal(0, 0.01*np.nanmax(vels), size=vels.shape)
             vels = vels + gaussian_variance
@@ -249,7 +256,7 @@ class Regression:
         reg_curl = svf.SpiralVectorField.get_curl(self.ur, self.vr)
         c_diff = init_curl - reg_curl
 
-        plot_extent = [self.x.min(), self.x.max(), self.y.min(), self.y.max()]
+
 
         fig8 = pl.figure(figsize=(self.figW, self.figH))
 

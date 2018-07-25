@@ -11,12 +11,12 @@ class NewVectorField:
 
         file_name = "/Users/joshua/Desktop/gpr-drifters/raw_data/osprein.nc"
         file = ncdf.Dataset(file_name, 'r')
-        
+
+        x = file.variables['lon'][:] / 1000.
+        y = file.variables['lat'][:] / 1000.
         u = file.variables['uvel'][:]
         v = file.variables['vvel'][:]
-        y = file.variables['lat'][:] / 1000
-        x = file.variables['lon'][:] / 1000
-        t = file.variables['time'][:] * 24
+        t = file.variables['time'][:]
 
         return x, y, u, v, t
 
@@ -53,13 +53,13 @@ if __name__ == "__main__":
 
     print(x)
 
-    x.squeeze()
-    y.squeeze()
-    u.squeeze()
-    v.squeeze()
-    t.squeeze()
+    x = x.squeeze()
+    y = y.squeeze()
+    u = u.squeeze()
+    v = v.squeeze()
+    t = t.squeeze()
 
-    print(u)
+    u = u[0]
 
     fig1 = pl.figure(figsize=(figW, figH))
 
@@ -71,20 +71,20 @@ if __name__ == "__main__":
 
     n = 0
 
-    ur = u[n, :, :]
-    vr = v[n, :, :]
+    #ur = u[n, :, :]
+    #vr = v[n, :, :]
 
     fig1 = pl.figure(figsize=(figW, figH))
 
     # Plot the Original Velocity Field
     plot1 = fig1.add_subplot(1, 2, 1, aspect='equal')
     orig_title = 'Original Velocity Field (0 drifters)'
-    setup_plot(plot1, x, y, ur, vr, orig_title)
+    setup_plot(plot1, x, y, u, v, orig_title)
 
-    slider_color = 'lightgoldenrodyellow'
-    slider_ax = pl.axes([0.05, 0.05, 0.85, 0.05], facecolor=slider_color)
+    #slider_color = 'lightgoldenrodyellow'
+    #slider_ax = pl.axes([0.05, 0.05, 0.85, 0.05], facecolor=slider_color)
 
-    slider = Slider(slider_ax, 'Freq', 0, t.size, valinit=0, valstep=1)
+    #slider = Slider(slider_ax, 'Freq', 0, t.size, valinit=0, valstep=1)
 
 
     def update(val):
@@ -98,6 +98,6 @@ if __name__ == "__main__":
         setup_plot(plot1, x, y, ur, vr, orig_title)
 
 
-    slider.on_changed(update)
+    #slider.on_changed(update)
 
     pl.show()
